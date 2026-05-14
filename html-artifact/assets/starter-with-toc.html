@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  :root {
+    --ivory:  #FAF9F5; --paper:  #FFFFFF; --slate: #141413;
+    --g100: #F0EEE6; --g200: #E6E3DA; --g300: #D1CFC5;
+    --g500: #87867F; --g700: #3D3D3A;
+    --clay: #D97757; --clay-d: #B85C3E; --oat: #E3DACC;
+    --olive: #788C5D; --rust: #B04A3F; --amber: #C78E3F; --steel: #5C7CA3;
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--ivory); color: var(--slate);
+    font-family: var(--sans); font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px 120px; }
+  section { scroll-margin-top: 24px; }
+
+  /* masthead */
+  header.masthead {
+    padding: 64px 0 40px;
+    border-bottom: 1.5px solid var(--g300);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--g500); margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before {
+    content: ""; width: 24px; height: 1.5px; background: var(--clay);
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(38px, 5.4vw, 56px); line-height: 1.06;
+    letter-spacing: -0.018em; margin: 0 0 8px; max-width: 20ch;
+  }
+  h1 em { font-style: italic; color: var(--clay); }
+  h2 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(22px, 2.4vw, 26px); line-height: 1.18;
+    letter-spacing: -0.012em; margin: 40px 0 10px;
+  }
+  h3 {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 18px; letter-spacing: -0.005em; margin: 0 0 6px;
+  }
+  .lead { font-size: 17px; color: var(--g700); margin: 18px 0 0; max-width: 60ch; }
+  p { color: var(--g700); margin: 12px 0; }
+  a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--clay); }
+
+  code {
+    font-family: var(--mono); font-size: 0.92em;
+    background: var(--g100); color: var(--slate);
+    padding: 1.5px 5px; border-radius: 4px;
+  }
+
+  /* two-column layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .toc {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    border-left: 2px solid var(--g300);
+    padding-left: 14px;
+  }
+  .toc a {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--g500);
+    text-decoration: none;
+    padding: 4px 0;
+    letter-spacing: 0.02em;
+  }
+  .toc a:hover, .toc a.active {
+    color: var(--clay);
+  }
+
+  /* callout */
+  .callout {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-left: 3px solid var(--clay);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 24px 0;
+  }
+  .callout .callout-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--g500);
+    margin-bottom: 6px;
+  }
+  .callout p { margin: 0; color: var(--g700); }
+
+  /* code block */
+  pre.code {
+    background: var(--slate);
+    color: #E6E3DA;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  /* collapsible */
+  details {
+    border: 1.5px solid var(--g300);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--paper);
+    margin: 12px 0;
+  }
+  details summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--slate);
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: "▸";
+    color: var(--clay);
+    font-size: 11px;
+    transition: transform .15s ease;
+    display: inline-block;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details > *:not(summary) { margin-top: 12px; }
+
+  /* footer */
+  footer.page-footer {
+    margin-top: 80px; padding-top: 24px;
+    border-top: 1.5px solid var(--g300);
+    font-family: var(--mono); font-size: 11px;
+    color: var(--g500); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    .toc { display: none; }
+  }
+  @media (max-width: 640px) { .wrap { padding: 0 20px 80px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">__EYEBROW__</div>
+    <h1>__TITLE__ <em>__ACCENT__</em></h1>
+    <p class="lead">__LEAD__</p>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc">
+      <a href="#tldr">TL;DR</a>
+      <a href="#__SECTION_1_ID__">__SECTION_1_LABEL__</a>
+      <a href="#__SECTION_2_ID__">__SECTION_2_LABEL__</a>
+      <a href="#gotchas">Gotchas</a>
+    </nav>
+
+    <main>
+
+      <section id="tldr">
+        <div class="callout">
+          <div class="callout-label">TL;DR</div>
+          <p>__TLDR__</p>
+        </div>
+      </section>
+
+      <section id="__SECTION_1_ID__">
+        <h2>__SECTION_1_HEADING__</h2>
+        <p>__SECTION_1_BODY__</p>
+      </section>
+
+      <section id="__SECTION_2_ID__">
+        <h2>__SECTION_2_HEADING__</h2>
+        <p>__SECTION_2_BODY__</p>
+      </section>
+
+      <section id="gotchas">
+        <h2>Gotchas</h2>
+        <details>
+          <summary>__GOTCHA_1_SUMMARY__</summary>
+          <p>__GOTCHA_1_BODY__</p>
+        </details>
+        <details>
+          <summary>__GOTCHA_2_SUMMARY__</summary>
+          <p>__GOTCHA_2_BODY__</p>
+        </details>
+      </section>
+
+    </main>
+
+  </div>
+
+  <footer class="page-footer">
+    Generated __DATE__ · Explainer
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+.env
+.env.*
+!.env.example
+
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local caches, model downloads, and experiment scratch.
+.cache/
+cache/
+model_cache/
+hf_cache/
+modal_logs/
+scratch/
+tmp/
+
+# Keep generated experiment outputs local unless explicitly promoted.
+circuit_runs/**/modal_logs/
+circuit_runs/**/scratch/
+*.log
+
+# Credential material should never be committed.
+credentials/
+secrets/
+*.pem
+*.key
+*.token

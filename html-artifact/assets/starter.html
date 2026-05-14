@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  :root {
+    /* neutrals (paper-and-clay palette) */
+    --ivory:  #FAF9F5;
+    --paper:  #FFFFFF;
+    --slate:  #141413;
+    --g100:   #F0EEE6;
+    --g200:   #E6E3DA;
+    --g300:   #D1CFC5;
+    --g500:   #87867F;
+    --g700:   #3D3D3A;
+
+    /* accent + semantics */
+    --clay:    #D97757;
+    --clay-d:  #B85C3E;
+    --oat:     #E3DACC;
+    --olive:   #788C5D;
+    --rust:    #B04A3F;
+    --amber:   #C78E3F;
+    --steel:   #5C7CA3;
+
+    /* typography stacks */
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--ivory);
+    color: var(--slate);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 32px 120px; }
+
+  /* masthead */
+  header.masthead {
+    padding: 64px 0 40px;
+    border-bottom: 1.5px solid var(--g300);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 24px; height: 1.5px;
+    background: var(--clay);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(38px, 5.4vw, 56px);
+    line-height: 1.06;
+    letter-spacing: -0.018em;
+    margin: 0 0 8px;
+    max-width: 20ch;
+  }
+  h1 em { font-style: italic; color: var(--clay); }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(22px, 2.4vw, 26px);
+    line-height: 1.18;
+    letter-spacing: -0.012em;
+    margin: 48px 0 10px;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  .lead {
+    font-size: 17px;
+    color: var(--g700);
+    line-height: 1.55;
+    margin: 18px 0 0;
+    max-width: 60ch;
+  }
+  p { color: var(--g700); margin: 12px 0; }
+
+  /* links */
+  a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--clay); }
+
+  /* inline code */
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--g100);
+    color: var(--slate);
+    padding: 1.5px 5px;
+    border-radius: 4px;
+  }
+
+  /* card */
+  .card {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .card-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-bottom: 8px;
+  }
+  .card h3 { margin: 0 0 6px; }
+  .card p  { color: var(--g700); font-size: 14.5px; margin: 0; }
+
+  /* badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    border-radius: 999px;
+  }
+  .badge.success { background: rgba(120,140,93,.16); color: var(--olive); }
+  .badge.danger  { background: rgba(176,74,63,.16);  color: var(--rust); }
+  .badge.warning { background: rgba(199,142,63,.18); color: var(--amber); }
+  .badge.info    { background: rgba(92,124,163,.16); color: var(--steel); }
+  .badge.neutral { background: var(--g100);           color: var(--g700); }
+
+  /* callout (left stripe) */
+  .callout {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-left: 3px solid var(--clay);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 24px 0;
+  }
+  .callout .callout-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--g500);
+    margin-bottom: 6px;
+  }
+  .callout p { margin: 0; color: var(--g700); }
+
+  /* footer */
+  footer.page-footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--g300);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* responsive */
+  @media (max-width: 880px) {
+    .wrap { padding: 0 20px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">__EYEBROW__</div>
+    <h1>__TITLE__ <em>__ACCENT__</em></h1>
+    <p class="lead">__LEAD__</p>
+  </header>
+
+  <!-- TL;DR -->
+  <div class="callout">
+    <div class="callout-label">TL;DR</div>
+    <p>__TLDR__</p>
+  </div>
+
+  <!-- Example section -->
+  <section>
+    <h2>__SECTION_HEADING__</h2>
+    <p>__SECTION_BODY__</p>
+
+    <div class="card">
+      <div class="card-eyebrow">__CARD_EYEBROW__</div>
+      <h3>__CARD_TITLE__</h3>
+      <p>__CARD_BODY__</p>
+    </div>
+  </section>
+
+  <footer class="page-footer">
+    Generated __DATE__ · __KIND__
+  </footer>
+
+</div>
+</body>
+</html>
