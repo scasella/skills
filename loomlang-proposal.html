@@ -1,0 +1,1321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoomLang — a programming language for AI agents</title>
+<style>
+  :root {
+    --ivory:  #FAF9F5;
+    --paper:  #FFFFFF;
+    --slate:  #141413;
+    --g100:   #F0EEE6;
+    --g200:   #E6E3DA;
+    --g300:   #D1CFC5;
+    --g500:   #87867F;
+    --g700:   #3D3D3A;
+
+    --clay:    #D97757;
+    --clay-d:  #B85C3E;
+    --oat:     #E3DACC;
+    --olive:   #788C5D;
+    --rust:    #B04A3F;
+    --amber:   #C78E3F;
+    --steel:   #5C7CA3;
+
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--ivory);
+    color: var(--slate);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px 140px; }
+
+  /* masthead */
+  header.masthead {
+    padding: 72px 0 44px;
+    border-bottom: 1.5px solid var(--g300);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 24px; height: 1.5px;
+    background: var(--clay);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(40px, 5.4vw, 62px);
+    line-height: 1.04;
+    letter-spacing: -0.018em;
+    margin: 0 0 8px;
+    max-width: 20ch;
+  }
+  h1 em { font-style: italic; color: var(--clay); }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(22px, 2.4vw, 28px);
+    line-height: 1.18;
+    letter-spacing: -0.012em;
+    margin: 56px 0 12px;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+    margin: 0 0 6px;
+  }
+  .lead {
+    font-size: 17.5px;
+    color: var(--g700);
+    line-height: 1.55;
+    margin: 18px 0 0;
+    max-width: 62ch;
+  }
+  p { color: var(--g700); margin: 12px 0; max-width: 70ch; }
+
+  a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--clay); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--g100);
+    color: var(--slate);
+    padding: 1.5px 5px;
+    border-radius: 4px;
+  }
+
+  /* TOC layout */
+  .layout { display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 56px; }
+  .toc {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    border-left: 2px solid var(--g300);
+    padding-left: 14px;
+  }
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--g500);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .toc a {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--g500);
+    text-decoration: none;
+    padding: 5px 0;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+  .toc a:hover, .toc a.active { color: var(--clay); }
+
+  /* cards */
+  .card {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .card-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-bottom: 8px;
+  }
+  .card h3 { margin: 0 0 6px; }
+  .card p  { color: var(--g700); font-size: 14.5px; margin: 0; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 20px 0; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 20px 0; }
+
+  /* badge / risk-tag */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.success { background: rgba(120,140,93,.16); color: var(--olive); }
+  .badge.danger  { background: rgba(176,74,63,.16);  color: var(--rust); }
+  .badge.warning { background: rgba(199,142,63,.18); color: var(--amber); }
+  .badge.info    { background: rgba(92,124,163,.16); color: var(--steel); }
+  .badge.neutral { background: var(--g100);           color: var(--g700); }
+
+  .risk-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .risk-tag.high { background: rgba(176,74,63,.16);  color: var(--rust); }
+  .risk-tag.med  { background: rgba(199,142,63,.18); color: var(--amber); }
+  .risk-tag.low  { background: rgba(120,140,93,.16); color: var(--olive); }
+
+  /* callout */
+  .callout {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-left: 3px solid var(--clay);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 24px 0;
+  }
+  .callout.warning { border-left-color: var(--amber); }
+  .callout.danger  { border-left-color: var(--rust); }
+  .callout.success { border-left-color: var(--olive); }
+  .callout .callout-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--g500);
+    margin-bottom: 6px;
+  }
+  .callout p { margin: 6px 0 0; color: var(--g700); }
+
+  /* prompt-box */
+  .prompt-box {
+    background: var(--g100);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 0 0 28px;
+  }
+  .prompt-box .label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--g500);
+    margin-bottom: 6px;
+  }
+  .prompt-box p { margin: 0; color: var(--g700); font-style: italic; }
+
+  /* code */
+  pre.code {
+    background: var(--slate);
+    color: #E6E3DA;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 18px 0;
+  }
+  pre.code .kw { color: #D9A55F; }
+  pre.code .st { color: #A8B991; }
+  pre.code .cm { color: #87867F; font-style: italic; }
+  pre.code .fn { color: #E3DACC; }
+  pre.code .ty { color: #B6C6DD; }
+  pre.code .id { color: #F0EEE6; }
+  pre.code .nb { color: #D89A8E; }
+
+  .code-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--g500);
+    margin: 24px 0 -10px;
+  }
+
+  /* row-list */
+  .row-list { display: flex; flex-direction: column; margin: 20px 0; }
+  .row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    align-items: start;
+    gap: 20px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--g100);
+    font-size: 14px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .meta {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 2px;
+  }
+  .row p { margin: 0; }
+
+  /* compare grid */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 24px 0;
+  }
+  .compare .option {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .compare .option .tradeoff {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--clay);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .compare .option h3 { margin: 0 0 10px; }
+  .compare .option ul { margin: 0; padding-left: 18px; color: var(--g700); font-size: 14px; }
+  .compare .option li { margin: 4px 0; }
+
+  /* table-grid for landscape */
+  .grid-table {
+    display: grid;
+    margin: 24px 0;
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .grid-table .gt-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    border-bottom: 1px solid var(--g100);
+  }
+  .grid-table .gt-row:last-child { border-bottom: none; }
+  .grid-table .gt-row.head {
+    background: var(--g100);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--g500);
+  }
+  .grid-table .gt-cell {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--g700);
+  }
+  .grid-table .gt-cell.label {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--slate);
+  }
+
+  /* layer stack */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 24px 0;
+  }
+  .stack .layer {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 36px 1fr 2fr;
+    gap: 18px;
+    align-items: center;
+  }
+  .stack .layer .num {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--g500);
+    text-align: right;
+  }
+  .stack .layer .name {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--slate);
+  }
+  .stack .layer .desc {
+    font-size: 13.5px;
+    color: var(--g700);
+  }
+  .stack .layer.intent  { border-left: 3px solid var(--clay); }
+  .stack .layer.spec    { border-left: 3px solid var(--clay); }
+  .stack .layer.artifact{ border-left: 3px solid var(--steel); }
+  .stack .layer.cap     { border-left: 3px solid var(--amber); }
+  .stack .layer.flow    { border-left: 3px solid var(--steel); }
+  .stack .layer.verify  { border-left: 3px solid var(--olive); }
+  .stack .layer.compile { border-left: 3px solid var(--g500); }
+  .stack .layer.runtime { border-left: 3px solid var(--rust); }
+  .stack .layer.explain { border-left: 3px solid var(--clay); }
+
+  /* mini hello-world contrast */
+  .hello-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 20px 0;
+  }
+  .hello-pair .col h3 { margin-bottom: 4px; }
+  .hello-pair .col .sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  /* details */
+  details {
+    border: 1.5px solid var(--g300);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--paper);
+    margin: 12px 0;
+  }
+  details summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--slate);
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: "▸";
+    color: var(--clay);
+    font-size: 11px;
+    transition: transform .15s ease;
+    display: inline-block;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details > *:not(summary) { margin-top: 12px; }
+
+  /* footer */
+  footer.page-footer {
+    margin-top: 96px;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--g300);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* responsive */
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc { display: none; }
+    .compare, .grid-2, .grid-3, .hello-pair { grid-template-columns: 1fr; }
+    .stack .layer { grid-template-columns: 28px 1fr; }
+    .stack .layer .desc { grid-column: 1 / -1; padding-left: 46px; }
+    .grid-table .gt-row { grid-template-columns: 1fr; }
+    .wrap { padding: 0 20px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Proposal · LoomLang · v0.1</div>
+    <h1>A programming language for <em>AI agents</em></h1>
+    <p class="lead">A typed, executable, auditable substrate that agents use to turn intent into software — while today's languages quietly become its implementation backends.</p>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc">
+      <span class="toc-label">Contents</span>
+      <a href="#tldr">TL;DR</a>
+      <a href="#insight">The central insight</a>
+      <a href="#claim">Where the claim is strong</a>
+      <a href="#graph">1. Typed artifact graph</a>
+      <a href="#intent">2. Intent-carrying changes</a>
+      <a href="#types">3. Effects &amp; capabilities</a>
+      <a href="#workflows">4. Durable workflows</a>
+      <a href="#views">5. Two representations</a>
+      <a href="#diff">6. Semantic diffs</a>
+      <a href="#tests">7. Tests as obligations</a>
+      <a href="#context">8. Context protocol</a>
+      <a href="#selfheal">9. Self-healing compiler</a>
+      <a href="#uncertainty">10. Native uncertainty</a>
+      <a href="#escalation">11. Typed escalation</a>
+      <a href="#compile">12. Compiles to today's code</a>
+      <a href="#syntax">A taste of the syntax</a>
+      <a href="#typesystem">The type system</a>
+      <a href="#stack">The full stack</a>
+      <a href="#hello">Hello, world</a>
+      <a href="#prior">Prior art</a>
+      <a href="#mvp">What to build first</a>
+      <a href="#close">Constrained delegation</a>
+    </nav>
+
+    <main>
+
+      <div class="prompt-box">
+        <span class="label">Premise</span>
+        <p>The agent-first language probably isn't a nicer Rust, stricter Python, or LLM-friendly TypeScript — it's a typed artifact graph + capability-secure runtime + workflow language + evidence ledger + compiler to existing codebases. A language / runtime / repository / OS hybrid.</p>
+      </div>
+
+      <div class="callout" id="tldr">
+        <div class="callout-label">TL;DR</div>
+        <p>Human-first languages optimize for readable source text. Agents need something different: <b>mechanically discoverable context, typed interfaces, bounded permissions, replayable execution, semantic diffs, provenance, and durable long-running workflows</b>. The winning agent-first substrate isn't a syntax — it's a typed graph of intent, code, tests, traces, and evidence that compiles down into the languages we already have.</p>
+      </div>
+
+      <section id="insight">
+        <h2>The central insight</h2>
+        <p>The wrong question is "can a human read this file?" The right one is <i>can an agent safely change this, prove what changed, recover from failure, and explain the result to a human reviewer?</i> That's a different design center.</p>
+
+        <div class="compare">
+          <div class="option">
+            <div class="tradeoff">Optimizes for human authorship</div>
+            <h3>Human-first languages</h3>
+            <ul>
+              <li>Readable source text</li>
+              <li>Local reasoning</li>
+              <li>Expressive syntax</li>
+              <li>Flexible abstraction</li>
+              <li>Interactive debugging</li>
+              <li>"I can understand this file"</li>
+            </ul>
+          </div>
+          <div class="option">
+            <div class="tradeoff">Optimizes for agent delegation</div>
+            <h3>Agent-first substrate</h3>
+            <ul>
+              <li>Mechanically discoverable context</li>
+              <li>Explicit invariants &amp; typed interfaces</li>
+              <li>Bounded permissions, replayable execution</li>
+              <li>Semantic diffs, provenance, evidence</li>
+              <li>Durable long-running workflows</li>
+              <li>Verifier-friendly, compact for context windows</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="claim">
+        <h2>Where the claim is strong &mdash; and where it overreaches</h2>
+        <p>The strongest version is not <i>"all languages disappear."</i> It is: existing languages were designed around human authorship, and agent-heavy production will expose that mismatch so severely that a new substrate becomes economically dominant.</p>
+
+        <p>But programming languages won't converge the way operating systems did — they serve too many roles. Expect convergence at the <b>agent-native intermediate layer</b>, not the surface syntax. Useful analogies:</p>
+
+        <div class="grid-table">
+          <div class="gt-row head">
+            <div class="gt-cell">Substrate</div>
+            <div class="gt-cell">What it became universal for</div>
+          </div>
+          <div class="gt-row"><div class="gt-cell label">Git</div><div class="gt-cell">Versioned change graph</div></div>
+          <div class="gt-row"><div class="gt-cell label">JSON / YAML</div><div class="gt-cell">Configuration</div></div>
+          <div class="gt-row"><div class="gt-cell label">SQL</div><div class="gt-cell">Durable queries</div></div>
+          <div class="gt-row"><div class="gt-cell label">LLVM</div><div class="gt-cell">Compiler middle-end</div></div>
+          <div class="gt-row"><div class="gt-cell label">Containers</div><div class="gt-cell">Deployment</div></div>
+          <div class="gt-row"><div class="gt-cell label">WebAssembly</div><div class="gt-cell">Portable components</div></div>
+          <div class="gt-row"><div class="gt-cell label">OpenAPI / JSON Schema</div><div class="gt-cell">Machine-readable interfaces</div></div>
+          <div class="gt-row"><div class="gt-cell label">LoomLang</div><div class="gt-cell">The universal <i>work</i> substrate — what agents read, mutate, verify, and compile</div></div>
+        </div>
+      </section>
+
+      <!-- ─── PRINCIPLE 1 ─── -->
+      <section id="graph">
+        <h2>1. The source of truth is a typed artifact graph, not text files</h2>
+        <p>The canonical program is not a directory of files. It is a graph of typed artifacts — each with type, owner, version, dependencies, invariants, permissions, provenance, failure modes, test obligations, and compiler targets.</p>
+
+        <svg viewBox="0 0 720 380" style="width:100%; height:auto; margin: 16px 0;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#87867F"/>
+            </marker>
+          </defs>
+
+          <!-- center: ProductGoal -->
+          <g>
+            <rect x="280" y="20" width="160" height="48" rx="10"
+                  fill="rgba(217,119,87,0.10)" stroke="#D97757" stroke-width="1.5"/>
+            <text x="360" y="42" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-size="13" fill="#141413">ProductGoal</text>
+            <text x="360" y="58" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">root intent</text>
+          </g>
+
+          <!-- ring of artifacts -->
+          <g font-family="ui-serif, Georgia, serif" font-size="12" fill="#141413">
+            <!-- left -->
+            <g>
+              <rect x="40"  y="100" width="130" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="105" y="125" text-anchor="middle">Requirement</text>
+            </g>
+            <g>
+              <rect x="40"  y="170" width="130" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="105" y="195" text-anchor="middle">DomainModel</text>
+            </g>
+            <g>
+              <rect x="40"  y="240" width="130" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="105" y="265" text-anchor="middle">APIContract</text>
+            </g>
+            <g>
+              <rect x="40"  y="310" width="130" height="40" rx="8" fill="rgba(199,142,63,0.10)" stroke="#C78E3F" stroke-width="1.5"/>
+              <text x="105" y="335" text-anchor="middle">Policy</text>
+            </g>
+
+            <!-- middle -->
+            <g>
+              <rect x="200" y="100" width="120" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="260" y="125" text-anchor="middle">DbSchema</text>
+            </g>
+            <g>
+              <rect x="200" y="310" width="120" height="40" rx="8" fill="rgba(120,140,93,0.10)" stroke="#788C5D" stroke-width="1.5"/>
+              <text x="260" y="335" text-anchor="middle">Test</text>
+            </g>
+
+            <!-- center-right -->
+            <g>
+              <rect x="340" y="100" width="120" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="400" y="125" text-anchor="middle">Service</text>
+            </g>
+            <g>
+              <rect x="340" y="170" width="120" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="400" y="195" text-anchor="middle">UIState</text>
+            </g>
+            <g>
+              <rect x="340" y="240" width="120" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="400" y="265" text-anchor="middle">Migration</text>
+            </g>
+            <g>
+              <rect x="340" y="310" width="120" height="40" rx="8" fill="rgba(92,124,163,0.10)" stroke="#5C7CA3" stroke-width="1.5"/>
+              <text x="400" y="335" text-anchor="middle">Trace</text>
+            </g>
+
+            <!-- right -->
+            <g>
+              <rect x="480" y="100" width="120" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="540" y="125" text-anchor="middle">Runbook</text>
+            </g>
+            <g>
+              <rect x="480" y="170" width="120" height="40" rx="8" fill="rgba(176,74,63,0.10)" stroke="#B04A3F" stroke-width="1.5"/>
+              <text x="540" y="195" text-anchor="middle">Incident</text>
+            </g>
+            <g>
+              <rect x="480" y="240" width="120" height="40" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+              <text x="540" y="265" text-anchor="middle">Eval</text>
+            </g>
+            <g>
+              <rect x="480" y="310" width="120" height="40" rx="8" fill="rgba(217,119,87,0.10)" stroke="#D97757" stroke-width="1.5"/>
+              <text x="540" y="335" text-anchor="middle">EvidenceBundle</text>
+            </g>
+          </g>
+
+          <!-- spokes (sample) -->
+          <g stroke="#D1CFC5" stroke-width="1.5" fill="none">
+            <line x1="280" y1="50" x2="170" y2="118"/>
+            <line x1="280" y1="50" x2="200" y2="195"/>
+            <line x1="280" y1="50" x2="200" y2="260"/>
+            <line x1="280" y1="50" x2="170" y2="328"/>
+            <line x1="360" y1="68" x2="260" y2="118"/>
+            <line x1="360" y1="68" x2="260" y2="328"/>
+            <line x1="360" y1="68" x2="400" y2="118"/>
+            <line x1="360" y1="68" x2="400" y2="195"/>
+            <line x1="360" y1="68" x2="400" y2="260"/>
+            <line x1="360" y1="68" x2="400" y2="328"/>
+            <line x1="440" y1="50" x2="540" y2="118"/>
+            <line x1="440" y1="50" x2="540" y2="195"/>
+            <line x1="440" y1="50" x2="540" y2="260"/>
+            <line x1="440" y1="50" x2="540" y2="328"/>
+          </g>
+
+          <!-- legend -->
+          <g font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">
+            <rect x="40" y="20" width="10" height="10" rx="2" fill="rgba(217,119,87,0.20)" stroke="#D97757" stroke-width="1"/>
+            <text x="56" y="29">intent</text>
+            <rect x="100" y="20" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#141413" stroke-width="1"/>
+            <text x="116" y="29">code</text>
+            <rect x="150" y="20" width="10" height="10" rx="2" fill="rgba(120,140,93,0.20)" stroke="#788C5D" stroke-width="1"/>
+            <text x="166" y="29">test</text>
+            <rect x="200" y="20" width="10" height="10" rx="2" fill="rgba(199,142,63,0.20)" stroke="#C78E3F" stroke-width="1"/>
+            <text x="216" y="29">policy</text>
+          </g>
+        </svg>
+
+        <p>A <code>notes.md</code> file titled "decisions" is weak. A typed <code>Requirement</code> linked to <code>AcceptanceCriteria</code>, <code>TestCase</code>, <code>CodePath</code>, <code>Migration</code>, and <code>EvidenceBundle</code> is dense. Unison points at this with content-addressed code; LoomLang generalizes the move — <b>requirements, tests, traces, decisions, and proofs are all content-addressed too</b>.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 2 ─── -->
+      <section id="intent">
+        <h2>2. Every change is intent-carrying</h2>
+        <p>No implementation change exists without an associated <code>change</code> object. This isn't documentation — the compiler reads it to <b>generate obligations</b>.</p>
+
+<pre class="code"><span class="kw">change</span> <span class="fn">AddInvoiceCsvExport</span> {
+  <span class="kw">intent</span>:
+    <span class="st">"Allow billing admins to export filtered invoices as CSV."</span>
+  <span class="kw">user_value</span>:
+    role: <span class="ty">BillingAdmin</span>
+    outcome: <span class="st">"download invoice data for reconciliation"</span>
+  <span class="kw">acceptance</span>:
+    - <span class="st">"Export respects active filters"</span>
+    - <span class="st">"CSV includes invoice_id, customer_id, amount, status, due_date"</span>
+    - <span class="st">"No PII beyond fields already visible in billing table"</span>
+    - <span class="st">"Export is audit-logged"</span>
+  <span class="kw">risk</span>:
+    data_sensitivity: <span class="nb">internal_financial</span>
+    requires_security_review: <span class="nb">true</span>
+  <span class="kw">evidence_required</span>:
+    - unit_tests
+    - integration_test
+    - permission_test
+    - audit_log_test
+    - ui_trace
+    - rollback_plan
+}</pre>
+
+        <p>Touches financial data &rarr; permission checks. Alters a schema &rarr; migration plus rollback. Touches UI &rarr; UI trace. Changes a public API &rarr; compatibility checks. <b>"Done" becomes impossible to claim without evidence.</b></p>
+      </section>
+
+      <!-- ─── PRINCIPLE 3 ─── -->
+      <section id="types">
+        <h2>3. Types include effects, capabilities, permissions, and risk</h2>
+        <p>A traditional type system says <code>String -&gt; Int</code>. Agent-first types need to say much more:</p>
+
+<pre class="code"><span class="kw">function</span>:
+  input:  <span class="ty">InvoiceFilter</span>
+  output: <span class="ty">CsvFile</span>
+  <span class="kw">effects</span>:
+    - <span class="fn">db.read</span>[<span class="ty">Invoice</span>]
+    - <span class="fn">audit.write</span>[<span class="ty">ExportEvent</span>]
+    - <span class="fn">file.generate</span>[<span class="ty">Csv</span>]
+  <span class="kw">forbidden</span>:
+    - <span class="fn">db.read</span>[<span class="ty">Customer.ssn</span>]
+    - <span class="fn">network.external</span>
+  <span class="kw">requires</span>:
+    - role[<span class="ty">BillingAdmin</span>]
+    - pii_policy_check
+  <span class="kw">evidence</span>:
+    - test.permission_denial
+    - test.audit_log_created</pre>
+
+        <div class="callout warning">
+          <div class="callout-label">No ambient authority</div>
+          <p>Agents should not operate in systems where any code can reach the network, filesystem, or database. They should be <b>forced to declare what they need</b>, and the runtime should grant only those capabilities. WASI points at this for execution; LoomLang generalizes it to every database, secret, deployment target, and user-data access.</p>
+        </div>
+      </section>
+
+      <!-- ─── PRINCIPLE 4 ─── -->
+      <section id="workflows">
+        <h2>4. Programs are durable workflows by default</h2>
+        <p>Agents don't just write functions. They run long tasks: reproduce, localize, patch, test, review, package, deploy, monitor, roll back. That isn't a function call. It's a <b>durable workflow</b> — and the language should treat workflows as first-class.</p>
+
+<pre class="code"><span class="kw">workflow</span> <span class="fn">FixBug</span>(report: <span class="ty">BugReport</span>) -&gt; <span class="ty">EvidenceBundle</span> {
+  <span class="kw">step</span> reproduce <span class="kw">using</span> <span class="ty">BrowserHarness</span>
+  <span class="kw">step</span> localize  <span class="kw">using</span> <span class="ty">TraceSearch</span>
+  <span class="kw">step</span> patch     <span class="kw">using</span> <span class="ty">CodeEdit</span>
+  <span class="kw">step</span> validate  <span class="kw">using</span> <span class="ty">TestSuite</span>
+  <span class="kw">step</span> review    <span class="kw">using</span> <span class="ty">AgentReview</span>[security, architecture]
+  <span class="kw">step</span> package   <span class="kw">using</span> <span class="ty">PullRequest</span>
+  <span class="kw">step</span> monitor   <span class="kw">using</span> <span class="ty">CanaryMetrics</span>
+
+  <span class="kw">on</span> failure:
+    preserve_trace
+    classify_failure
+    propose_next_action
+
+  <span class="kw">on</span> human_required:
+    <span class="kw">emit</span> <span class="ty">DecisionRequest</span>
+}</pre>
+
+        <p>Fuses three traditions: <b>Temporal</b>'s durable execution with deterministic replay, <b>P</b>'s communicating state machines with checkable correctness properties, and ordinary code's familiarity — plus first-class typed escalation to humans.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 5 ─── -->
+      <section id="views">
+        <h2>5. Two representations — machine-canonical, human-explainable</h2>
+        <p>The canonical representation doesn't need to be hand-written text. It can be a graph IR, an AST database, content-addressed objects, or binary components. But the system must always produce reliable <b>human projections</b>:</p>
+
+        <div class="grid-3">
+          <div class="card"><div class="card-eyebrow">Q1</div><h3>What changed?</h3><p>Behavior-level summary, not file edits.</p></div>
+          <div class="card"><div class="card-eyebrow">Q2</div><h3>Why did it change?</h3><p>Linked intent &amp; user value.</p></div>
+          <div class="card"><div class="card-eyebrow">Q3</div><h3>What evidence?</h3><p>Tests, traces, screenshots, logs.</p></div>
+          <div class="card"><div class="card-eyebrow">Q4</div><h3>What risks remain?</h3><p>Open invariants &amp; assumptions.</p></div>
+          <div class="card"><div class="card-eyebrow">Q5</div><h3>What rollback exists?</h3><p>Reversibility plan, executable.</p></div>
+          <div class="card"><div class="card-eyebrow">Q6</div><h3>What was discarded?</h3><p>Branches the agent tried and rejected.</p></div>
+        </div>
+
+        <p>Today, source code is primary and explanations are secondary. In LoomLang <b>the graph is primary; code and explanations are projections</b>.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 6 ─── -->
+      <section id="diff">
+        <h2>6. Semantic diffs matter more than textual diffs</h2>
+
+        <div class="compare">
+          <div class="option">
+            <div class="tradeoff">What we have today</div>
+            <h3>Textual diff</h3>
+<pre class="code" style="margin: 4px 0;"><span class="cm">+ if user.is_admin:</span>
+<span class="cm">+     allow_export()</span></pre>
+            <p style="font-size:13px; color:var(--g500); margin-top:8px;">Reviewer must reverse-engineer intent and risk from the lines.</p>
+          </div>
+          <div class="option">
+            <div class="tradeoff">What LoomLang surfaces</div>
+            <h3>Semantic diff</h3>
+<pre class="code" style="margin: 4px 0;"><span class="kw">Capability added</span>:
+  billing.export_csv
+<span class="kw">Permission boundary</span>:
+  BillingAdmin → CsvFile of Invoice
+<span class="kw">Data exposure</span>:
+  invoice_id, customer_id, amount,
+  status, due_date · <span class="st">no new PII</span>
+<span class="kw">Audit</span>:
+  new ExportEvent on success
+<span class="kw">Tests added</span>:
+  + admin_can_export
+  + non_admin_denied
+  + export_is_audit_logged
+<span class="kw">Residual risk</span>:
+  CSV not load-tested &gt; 100k rows</pre>
+          </div>
+        </div>
+
+        <p>Agents operate on semantic diffs. Humans review semantic diffs. Textual diffs still exist — they live a layer below.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 7 ─── -->
+      <section id="tests">
+        <h2>7. Testing is not separate from programming</h2>
+        <p>Tests aren't files in a folder — they are <b>obligations generated by artifact types</b>. The compiler knows an endpoint touching sensitive data requires permission tests; a migration requires rollback tests; a UI state requires a DOM trace.</p>
+
+<pre class="code"><span class="kw">api</span> <span class="fn">POST /invoices/export</span> {
+  <span class="kw">requires</span> role <span class="ty">BillingAdmin</span>
+  <span class="kw">reads</span>    <span class="ty">Invoice</span>
+  <span class="kw">returns</span>  <span class="ty">CsvFile</span>
+  <span class="kw">obligations</span>:
+    - permission_denial_test <span class="cm">// for non_admin</span>
+    - audit_log_test         <span class="cm">// for success</span>
+    - property_test          <span class="st">"exported rows match filter"</span>
+    - regression_test        <span class="cm">// from prior bug reports</span>
+}</pre>
+
+        <p>Agents are very good at producing plausible code. The substrate forces them to produce <b>verifiable work packets</b> — making <code>EvidenceBundle</code> as fundamental as a function return type.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 8 ─── -->
+      <section id="context">
+        <h2>8. Context discovery is built into the language</h2>
+        <p>Today, agents waste enormous effort asking: where is the code? what command runs tests? which docs are authoritative? what does "done" mean here? LoomLang declares this <b>as a typed, queryable, enforced context block</b>:</p>
+
+<pre class="code"><span class="kw">context</span> <span class="fn">BillingExport</span> {
+  <span class="kw">canonical_docs</span>:
+    - <span class="ty">BillingDomainModel</span>
+    - <span class="ty">InvoicePermissionPolicy</span>
+    - <span class="ty">CsvExportPattern</span>
+  <span class="kw">relevant_components</span>:
+    - <span class="ty">InvoiceRepository</span>
+    - <span class="ty">BillingTableUI</span>
+    - <span class="ty">AuditLogService</span>
+  <span class="kw">forbidden_patterns</span>:
+    - direct_sql_from_ui
+    - unaudited_download
+    - customer_pii_in_csv
+  <span class="kw">validation_commands</span>:
+    - test <span class="ty">BillingExportSuite</span>
+    - lint <span class="ty">DependencyBoundaries</span>
+    - eval <span class="ty">CsvExportGoldenCases</span>
+}</pre>
+
+        <p>Effectively a machine-readable <code>AGENTS.md</code> — typed, linked to code, mechanically enforced.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 9 ─── -->
+      <section id="selfheal">
+        <h2>9. The compiler is partially self-healing</h2>
+        <p>A normal compiler says <code>Type error at line 43</code>. An agent-first compiler should expose a structured repair interface:</p>
+
+<pre class="code"><span class="nb">Violation</span>:
+  BillingExportUI depends directly on InvoiceRepository.
+  Domain rule forbids UI → Repo dependency.
+
+<span class="kw">Allowed path</span>:
+  UI → Runtime → Service → Repo
+
+<span class="kw">Suggested repair</span>:
+  Move export call into BillingExportService.
+  Expose typed command BillingExportRuntime.requestCsvExport.
+
+<span class="kw">Generate patch?</span> [y/n]</pre>
+
+        <p>And every failure can be promoted into the language itself:</p>
+
+<pre class="code"><span class="kw">failure</span> <span class="fn">PatternViolation_2026_05_18</span> {
+  cause:    direct_repo_access_from_ui
+  repair:   introduce_service_boundary
+  promoted_to_rule: <span class="ty">DependencyBoundaryLint</span>
+  regression_guard: <span class="nb">enabled</span>
+}</pre>
+
+        <p>That's how an agent factory accumulates institutional memory. Every failure becomes a lint, a test, a policy, a refactoring recipe, an eval example.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 10 ─── -->
+      <section id="uncertainty">
+        <h2>10. Native notion of uncertainty</h2>
+        <p>Human-written programs pretend uncertainty doesn't exist. Agent-written programs cannot. LoomLang tracks epistemic state directly:</p>
+
+<pre class="code"><span class="kw">claim</span> <span class="st">"Existing export endpoint is unused"</span> {
+  confidence: <span class="nb">0.72</span>
+  evidence:
+    - no references in repo_search
+    - no route hits in last_30_days_logs
+  missing:
+    - production dashboard unavailable
+  action:
+    <span class="kw">require</span> human_confirmation <span class="kw">before</span> deletion
+}</pre>
+
+        <p>The language distinguishes between <span class="badge success">proven</span> <span class="badge info">tested</span> <span class="badge info">observed</span> <span class="badge warning">inferred</span> <span class="badge warning">guessed</span> <span class="badge danger">assumed</span> <span class="badge neutral">human-approved</span> — categories normal languages have no place to put.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 11 ─── -->
+      <section id="escalation">
+        <h2>11. First-class human escalation</h2>
+        <p>Not "ask the user." A typed, structured decision request that lets the agent <b>continue everything else</b> while marking one specific decision as blocked.</p>
+
+<pre class="code"><span class="kw">decision_request</span> <span class="fn">DataRetentionAmbiguity</span> {
+  question:
+    <span class="st">"Should exported invoice CSVs be stored server-side or generated ephemerally?"</span>
+  options:
+    A: <span class="st">"Ephemeral generation only"</span>
+    B: <span class="st">"Store generated CSV for 24 hours"</span>
+    C: <span class="st">"Store export history but not file contents"</span>
+  recommendation: A
+  rationale:
+    - lower data retention risk
+    - simpler compliance posture
+    - sufficient for current user story
+  blocked_steps:
+    - finalize <span class="ty">ExportStoragePolicy</span>
+}</pre>
+
+        <p>Human work becomes <b>exception handling</b>, not babysitting.</p>
+      </section>
+
+      <!-- ─── PRINCIPLE 12 ─── -->
+      <section id="compile">
+        <h2>12. Compiles to existing languages</h2>
+        <p>The winning agent language doesn't ask the world to be rewritten. It sits above existing repos as a meta-language — and emits ordinary code.</p>
+
+        <svg viewBox="0 0 720 280" style="width:100%; height:auto; margin: 16px 0;">
+          <defs>
+            <marker id="arrowc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#87867F"/></marker>
+          </defs>
+
+          <!-- center: LoomLang component -->
+          <g>
+            <rect x="260" y="100" width="200" height="80" rx="12"
+                  fill="rgba(217,119,87,0.10)" stroke="#D97757" stroke-width="1.5"/>
+            <text x="360" y="132" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-size="16" fill="#141413">LoomLang component</text>
+            <text x="360" y="155" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#87867F">intent · types · effects</text>
+          </g>
+
+          <!-- targets -->
+          <g font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#141413">
+            <g><rect x="20"  y="20"  width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="80"  y="40"  text-anchor="middle">typescript</text></g>
+            <g><rect x="160" y="20"  width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="220" y="40"  text-anchor="middle">python</text></g>
+            <g><rect x="300" y="20"  width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="360" y="40"  text-anchor="middle">rust</text></g>
+            <g><rect x="440" y="20"  width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="500" y="40"  text-anchor="middle">go</text></g>
+            <g><rect x="580" y="20"  width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="640" y="40"  text-anchor="middle">sql</text></g>
+
+            <g><rect x="20"  y="232" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="80"  y="252" text-anchor="middle">terraform</text></g>
+            <g><rect x="160" y="232" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="220" y="252" text-anchor="middle">k8s manifests</text></g>
+            <g><rect x="300" y="232" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="360" y="252" text-anchor="middle">openapi</text></g>
+            <g><rect x="440" y="232" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="500" y="252" text-anchor="middle">wasm</text></g>
+            <g><rect x="580" y="232" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/><text x="640" y="252" text-anchor="middle">ci jobs · docs · pr</text></g>
+          </g>
+
+          <!-- arrows -->
+          <g stroke="#87867F" stroke-width="1.5" fill="none">
+            <path d="M310,100 L80, 56"  marker-end="url(#arrowc)"/>
+            <path d="M330,100 L220,56"  marker-end="url(#arrowc)"/>
+            <path d="M360,100 L360,56"  marker-end="url(#arrowc)"/>
+            <path d="M390,100 L500,56"  marker-end="url(#arrowc)"/>
+            <path d="M410,100 L640,56"  marker-end="url(#arrowc)"/>
+
+            <path d="M310,180 L80,228"  marker-end="url(#arrowc)"/>
+            <path d="M330,180 L220,228" marker-end="url(#arrowc)"/>
+            <path d="M360,180 L360,228" marker-end="url(#arrowc)"/>
+            <path d="M390,180 L500,228" marker-end="url(#arrowc)"/>
+            <path d="M410,180 L640,228" marker-end="url(#arrowc)"/>
+          </g>
+        </svg>
+
+<pre class="code"><span class="kw">component</span> <span class="fn">BillingExport</span>
+  <span class="kw">target</span> backend:  python.fastapi
+  <span class="kw">target</span> frontend: typescript.react
+  <span class="kw">target</span> infra:    terraform
+  <span class="kw">target</span> tests:    pytest + playwright</pre>
+
+        <p>The agent works in LoomLang. The repo still receives ordinary code. Adoption doesn't require rewriting anything.</p>
+      </section>
+
+      <!-- ─── SYNTAX TASTE ─── -->
+      <section id="syntax">
+        <h2>A taste of the syntax</h2>
+        <p>A small module — describing user intent, data model, permissions, effects, invariants, tests, workflow, and done condition <b>in one artifact</b>:</p>
+
+<pre class="code"><span class="kw">module</span> <span class="fn">Billing.ExportCsv</span>
+
+<span class="kw">goal</span> <span class="fn">AddInvoiceCsvExport</span> {
+  actor:   <span class="ty">BillingAdmin</span>
+  outcome: <span class="st">"Export visible invoices to CSV for reconciliation"</span>
+  risk:    internal_financial_data
+}
+
+<span class="kw">resource</span> <span class="fn">Invoice</span> {
+  fields:
+    invoice_id:     <span class="ty">PublicId</span>
+    customer_id:    <span class="ty">CustomerId</span>
+    amount:         <span class="ty">Money</span>
+    status:         <span class="ty">InvoiceStatus</span>
+    due_date:       <span class="ty">Date</span>
+    internal_notes: <span class="ty">SensitiveText</span> <span class="nb">@not_exportable</span>
+}
+
+<span class="kw">capability</span> <span class="fn">CsvExport</span> {
+  allowed_roles: [<span class="ty">BillingAdmin</span>]
+  reads:         <span class="ty">Invoice</span>[visible_to_actor]
+  writes:        <span class="ty">AuditLog.ExportEvent</span>
+  forbids:
+    - Invoice.internal_notes
+    - Customer.ssn
+    - network.external
+}
+
+<span class="kw">service</span> <span class="fn">ExportInvoices</span> {
+  input:  <span class="ty">InvoiceFilter</span>
+  output: <span class="ty">CsvFile</span>
+  effects:
+    - db.read[<span class="ty">Invoice</span>]
+    - audit.write[<span class="ty">ExportEvent</span>]
+    - file.generate[<span class="ty">CsvFile</span>]
+  invariants:
+    - exported_rows == invoices_matching(input)
+    - no_field(classified_as: restricted_pii)
+    - audit_event.exists <span class="kw">for</span> <span class="kw">every</span> successful_export
+  obligations:
+    - unit_test         rows_match_filter
+    - permission_test   non_admin_denied
+    - property_test     no_restricted_fields
+    - integration_test  csv_download
+    - ui_trace          billing_admin_exports_csv
+}
+
+<span class="kw">workflow</span> <span class="fn">ImplementChange</span> {
+  steps:
+    - inspect_existing_billing_patterns
+    - generate_service
+    - generate_ui_action
+    - generate_tests
+    - run_obligations
+    - produce_evidence_bundle
+    - open_pull_request
+  stop_when:
+    all_obligations_pass
+    <span class="kw">and</span> semantic_diff.reviewable
+}</pre>
+
+        <p>Notice what this describes: not <i>"the code that exports CSVs"</i>, but the <b>contract</b> under which an agent is allowed to produce that code, and the evidence required to call it done.</p>
+      </section>
+
+      <!-- ─── TYPE SYSTEM ─── -->
+      <section id="typesystem">
+        <h2>The ideal type system</h2>
+        <p>The type system layers ordinary static types with several agent-native dimensions — each captures something today's languages either ignore or scatter across comments, lint rules, and tribal knowledge.</p>
+
+        <div class="row-list">
+          <div class="row">
+            <span class="meta">Static</span>
+            <p>Ordinary correctness — <code>InvoiceFilter → List[Invoice]</code>.</p>
+          </div>
+          <div class="row">
+            <span class="meta">Refinement</span>
+            <p>Value constraints — <code>Percent where 0 ≤ value ≤ 100</code>, <code>CsvFile where rows ≤ max_export_rows</code>.</p>
+          </div>
+          <div class="row">
+            <span class="meta">Effect</span>
+            <p>What the code can do — <code>db.read[Invoice]</code>, <code>audit.write[ExportEvent]</code>, <code>network.none</code>.</p>
+          </div>
+          <div class="row">
+            <span class="meta">Capability</span>
+            <p>What authority is granted — <code>requires role[BillingAdmin]</code>, <code>forbids secret[ProductionDatabaseWrite]</code>.</p>
+          </div>
+          <div class="row">
+            <span class="meta">Resource</span>
+            <p>For data, money, files, irreversible operations — <code>ExportedCsv is EphemeralFile expires_after 10 minutes</code>, <code>PaymentCapture is IrreversibleAction</code>.</p>
+          </div>
+          <div class="row">
+            <span class="meta">Risk</span>
+            <p>Useful for governance — <code>low</code> · <code>customer_visible</code> · <code>regulated_data</code> · <code>safety_critical</code>.</p>
+          </div>
+          <div class="row">
+            <span class="meta">Evidence</span>
+            <p>A change is only complete if it returns the required evidence — <code>Change[BillingExport] → EvidenceBundle[UnitTests, PermissionTests, AuditLogTrace, UiTrace, RollbackPlan]</code>.</p>
+          </div>
+        </div>
+
+        <p>Types stop being only documentation. <b>They become work contracts.</b></p>
+      </section>
+
+      <!-- ─── STACK ─── -->
+      <section id="stack">
+        <h2>The full stack</h2>
+        <p>The language is one part. The runtime and artifact model are equally important. Nine layers, each with a different audience and a different verifier.</p>
+
+        <div class="stack">
+          <div class="layer intent"><div class="num">9</div><div class="name">Human intent</div><div class="desc">Natural language, sketches, tickets, product goals, review comments.</div></div>
+          <div class="layer spec"><div class="num">8</div><div class="name">WorkSpec</div><div class="desc">Typed goals, requirements, risks, acceptance criteria, budgets.</div></div>
+          <div class="layer artifact"><div class="num">7</div><div class="name">Artifact graph</div><div class="desc">Code, tests, schemas, docs, policies, traces, evals, deployments.</div></div>
+          <div class="layer cap"><div class="num">6</div><div class="name">Capability &amp; effect</div><div class="desc">Permissions, resources, secrets, side effects, data sensitivity.</div></div>
+          <div class="layer flow"><div class="num">5</div><div class="name">Workflow</div><div class="desc">Durable tasks, state machines, agent plans, retries, escalation.</div></div>
+          <div class="layer verify"><div class="num">4</div><div class="name">Verification</div><div class="desc">Type checks, tests, model checking, property checks, evals, simulations.</div></div>
+          <div class="layer compile"><div class="num">3</div><div class="name">Compilation</div><div class="desc">Emits Python, TypeScript, Rust, SQL, Terraform, WASM, docs, CI.</div></div>
+          <div class="layer runtime"><div class="num">2</div><div class="name">Runtime</div><div class="desc">Sandboxes, durable execution, replay, audit, rollback, observability.</div></div>
+          <div class="layer explain"><div class="num">1</div><div class="name">Explanation</div><div class="desc">Human-readable summaries, semantic diffs, evidence bundles, decisions.</div></div>
+        </div>
+
+        <div class="callout">
+          <div class="callout-label">A normal runtime asks</div>
+          <p><i>"How do I execute this program?"</i> &nbsp;An agent-first runtime asks: <i>"How do I let uncertain model-driven workers safely modify, test, explain, and deploy a system over time?"</i> That is much more OS-like than VM-like.</p>
+        </div>
+      </section>
+
+      <!-- ─── HELLO WORLD ─── -->
+      <section id="hello">
+        <h2>"Hello, world"</h2>
+        <p>The philosophical difference shows in the smallest possible program.</p>
+
+        <div class="hello-pair">
+          <div class="col">
+            <div class="sub">Human-first</div>
+            <h3>Smallest expression of behavior</h3>
+<pre class="code"><span class="fn">print</span>(<span class="st">"Hello, world!"</span>)</pre>
+          </div>
+          <div class="col">
+            <div class="sub">Agent-first</div>
+            <h3>Safest expression of intent + evidence</h3>
+<pre class="code"><span class="kw">goal</span> <span class="fn">GreetUser</span> {
+  intent: <span class="st">"Display greeting to user"</span>
+  actor:  <span class="ty">AnonymousUser</span>
+  acceptance:
+    - page displays <span class="st">"Hello, world!"</span>
+    - no network access
+    - no persisted state
+}
+
+<span class="kw">component</span> <span class="fn">GreetingPage</span> {
+  output: <span class="ty">HtmlPage</span>
+  effects: <span class="nb">none</span>
+  evidence:
+    - render_test
+    - screenshot_trace
+}</pre>
+          </div>
+        </div>
+
+        <p>Overkill for hello-world — but the overhead becomes <i>essential</i> once an agent is generating fifty endpoints per day across a regulated codebase.</p>
+      </section>
+
+      <!-- ─── PRIOR ART ─── -->
+      <section id="prior">
+        <h2>Prior art — pieces of the substrate already exist</h2>
+        <p>No single system does this. Several point at fragments. LoomLang is the <b>synthesis</b>:</p>
+
+        <div class="grid-table">
+          <div class="gt-row head">
+            <div class="gt-cell">System</div>
+            <div class="gt-cell">What it contributes</div>
+          </div>
+          <div class="gt-row"><div class="gt-cell label">Unison</div><div class="gt-cell">Content-addressed code; typed durable storage; refactoring &amp; dependency ergonomics.</div></div>
+          <div class="gt-row"><div class="gt-cell label">Temporal</div><div class="gt-cell">Durable workflow execution and replay semantics.</div></div>
+          <div class="gt-row"><div class="gt-cell label">P language</div><div class="gt-cell">Communicating state machines plus formal checking for distributed systems.</div></div>
+          <div class="gt-row"><div class="gt-cell label">WASM Component Model · WASI</div><div class="gt-cell">Portable components; capability-style imports at link/instantiation.</div></div>
+          <div class="gt-row"><div class="gt-cell label">OpenAI Harness Engineering</div><div class="gt-cell">Repo-local agent legibility, structured docs, mechanical invariants, evidence loops.</div></div>
+          <div class="gt-row"><div class="gt-cell label">TLA+ · Alloy · Dafny · Lean</div><div class="gt-cell">Specification, proof, model checking, machine-checkable invariants.</div></div>
+          <div class="gt-row"><div class="gt-cell label">Nix · Bazel</div><div class="gt-cell">Reproducibility, hermetic builds, dependency graphs.</div></div>
+          <div class="gt-row"><div class="gt-cell label">OpenAPI · JSON Schema · protobuf</div><div class="gt-cell">Machine-readable contracts.</div></div>
+          <div class="gt-row"><div class="gt-cell label">Git</div><div class="gt-cell">Versioned change graph; branching, merging, provenance.</div></div>
+          <div class="gt-row"><div class="gt-cell label">Kubernetes</div><div class="gt-cell">Declarative desired state with reconciliation loops.</div></div>
+          <div class="gt-row"><div class="gt-cell label">OpenTelemetry</div><div class="gt-cell">Traces as first-class operational evidence.</div></div>
+        </div>
+
+        <p style="margin-top: 16px;"><b>The convergence formula:</b> Git + types + workflows + capabilities + specs + traces + evidence + compiler.</p>
+      </section>
+
+      <!-- ─── MVP ─── -->
+      <section id="mvp">
+        <h2>What to build first</h2>
+        <p>The practical MVP is not a whole new language. It's a <b>repo-local agent substrate</b> that sits above existing code — usable today on a Python or TypeScript monorepo, without inventing syntax.</p>
+
+        <div class="grid-2">
+          <div class="card"><div class="card-eyebrow">Piece 1</div><h3>WorkSpec.yaml</h3><p>Typed task object: intent, scope, risks, acceptance criteria, affected domains, required evidence.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 2</div><h3>ArtifactGraph</h3><p>Index code, docs, tests, APIs, schemas, commands, policies, prior PRs as typed nodes.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 3</div><h3>CapabilityPolicy</h3><p>Declare what agents may read, write, execute, access, deploy.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 4</div><h3>EvidenceBundle</h3><p>Standard output: diff, tests, traces, screenshots, logs, semantic summary, residual risks.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 5</div><h3>SemanticDiff</h3><p>Explain behavior-level changes, not file edits.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 6</div><h3>ObligationCompiler</h3><p>Given a WorkSpec, generate required checks.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 7</div><h3>AgentRepairProtocol</h3><p>Convert failures into structured repair hints.</p></div>
+          <div class="card"><div class="card-eyebrow">Piece 8</div><h3>HumanDecisionRequest</h3><p>Typed escalation instead of vague "what should I do?"</p></div>
+        </div>
+
+        <div class="code-label">A concrete MVP — WorkSpec.yaml</div>
+<pre class="code"><span class="kw">workspec</span>:
+  id:     billing.export_csv
+  intent: Allow billing admins to export visible invoices as CSV.
+  actor:  <span class="ty">BillingAdmin</span>
+
+  <span class="kw">scope</span>:
+    include: [billing-ui, billing-service, invoice-repository]
+    exclude: [payment-processing, customer-profile-service]
+
+  <span class="kw">risk</span>:
+    data_classification: internal_financial
+    customer_visible:    <span class="nb">true</span>
+    regulated:           <span class="nb">false</span>
+
+  <span class="kw">capabilities</span>:
+    allow:
+      - read:     invoices
+      - write:    audit_logs
+      - generate: csv_file
+    deny:
+      - read:     customer_ssn
+      - network:  external
+      - write:    payments
+
+  <span class="kw">acceptance</span>:
+    - Export respects active filters.
+    - Non-admin users cannot export.
+    - Export is audit logged.
+    - CSV does not include restricted PII.
+
+  <span class="kw">evidence_required</span>:
+    - unit_tests
+    - integration_tests
+    - permission_tests
+    - ui_trace
+    - semantic_diff
+    - rollback_plan</pre>
+
+        <p>That's the first step toward the language Geoff is imagining. The agent isn't told <i>"add CSV export"</i>. It is given a typed work contract.</p>
+      </section>
+
+      <!-- ─── ANTI-PATTERNS / FAQ ─── -->
+      <section>
+        <h2>Common pushback</h2>
+
+        <details>
+          <summary>"Don't dynamic languages disappear under this?"</summary>
+          <p>No — but untyped <i>production surfaces</i> become liabilities. Python in a notebook stays useful. Python without typed boundaries, schemas, tests, and artifact metadata becomes a legacy island inside a typed agent substrate. The bet is on wrapping, not killing.</p>
+        </details>
+
+        <details>
+          <summary>"Why not just keep iterating on AGENTS.md?"</summary>
+          <p>AGENTS.md is a great first step. It's also unenforced markdown. The moment context goes stale, agents quietly diverge. LoomLang's bet is that the substrate must be <b>typed and machine-checked</b>, not narrative — same conceptual move as JSON Schema vs. "the API docs in Confluence".</p>
+        </details>
+
+        <details>
+          <summary>"Isn't this just a workflow engine plus a type checker?"</summary>
+          <p>That's roughly the right shape. The hard part isn't any one of them — it's the <b>composition</b>: a workflow whose steps emit typed evidence, whose effects are gated by capability policy, whose diffs are semantic, whose failures become future lints. Each piece exists; the integration is what's missing.</p>
+        </details>
+
+        <details>
+          <summary>"What about the people who want to read the code?"</summary>
+          <p>They get a much better artifact than a 4,000-line diff. They get a <b>semantic diff</b>, the linked intent, the evidence bundle, the residual risks, and (if they want) the underlying generated code. The human-readable layer becomes a projection — but a denser, more honest projection than today's PR description plus 28 changed files.</p>
+        </details>
+      </section>
+
+      <!-- ─── CLOSE ─── -->
+      <section id="close">
+        <h2>Programming as constrained delegation</h2>
+        <p>Human-first programming is <i>"I write instructions for a machine."</i></p>
+        <p>Agent-first programming is <i>"I specify goals, constraints, permissions, and evidence obligations for model-driven workers operating inside a controlled software substrate."</i></p>
+
+        <div class="callout success">
+          <div class="callout-label">Final form</div>
+          <p>A statically typed, capability-secure, content-addressed, workflow-native artifact graph that compiles human intent into code, tests, docs, policies, deployments, traces, and evidence bundles — while preserving enough semantic structure for agents to safely modify it and humans to review it.</p>
+        </div>
+
+        <p>Or more simply: <b>a language where every change carries its intent, authority, proof obligations, execution trace, and explanation.</b></p>
+
+        <p>That's the thing that could plausibly cause a convergence event — not because humans stop caring about programming languages, but because agents need a different substrate, and once software production becomes agent-dominant, <i>the substrate agents prefer becomes the substrate everyone else is forced to accommodate.</i></p>
+      </section>
+
+      <footer class="page-footer">
+        Proposal · LoomLang v0.1 · 2026-05-18
+      </footer>
+
+    </main>
+  </div>
+
+</div>
+
+<script>
+  // Highlight active TOC link as sections scroll into view
+  (function () {
+    var links = document.querySelectorAll('.toc a');
+    var sections = [];
+    links.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) sections.push({ id: id, el: el, link: a });
+    });
+    function onScroll() {
+      var y = window.scrollY + 120;
+      var current = sections[0];
+      sections.forEach(function (s) {
+        if (s.el.offsetTop <= y) current = s;
+      });
+      links.forEach(function (a) { a.classList.remove('active'); });
+      if (current) current.link.classList.add('active');
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>
