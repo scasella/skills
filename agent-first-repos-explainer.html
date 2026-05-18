@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent-first repos · explainer</title>
+<style>
+  :root {
+    --ivory:  #FAF9F5;
+    --paper:  #FFFFFF;
+    --slate:  #141413;
+    --g100:   #F0EEE6;
+    --g200:   #E6E3DA;
+    --g300:   #D1CFC5;
+    --g500:   #87867F;
+    --g700:   #3D3D3A;
+
+    --clay:    #D97757;
+    --clay-d:  #B85C3E;
+    --oat:     #E3DACC;
+    --olive:   #788C5D;
+    --rust:    #B04A3F;
+    --amber:   #C78E3F;
+    --steel:   #5C7CA3;
+
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--ivory);
+    color: var(--slate);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 32px 140px; }
+
+  /* masthead */
+  header.masthead {
+    padding: 64px 0 40px;
+    border-bottom: 1.5px solid var(--g300);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 24px; height: 1.5px;
+    background: var(--clay);
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(40px, 5.6vw, 62px);
+    line-height: 1.04;
+    letter-spacing: -0.018em;
+    margin: 0 0 8px;
+    max-width: 22ch;
+  }
+  h1 em { font-style: italic; color: var(--clay); }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(22px, 2.4vw, 28px);
+    line-height: 1.18;
+    letter-spacing: -0.012em;
+    margin: 56px 0 12px;
+    scroll-margin-top: 24px;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+    margin: 24px 0 6px;
+  }
+  .lead {
+    font-family: var(--serif);
+    font-size: 19px;
+    color: var(--g700);
+    line-height: 1.5;
+    margin: 18px 0 0;
+    max-width: 62ch;
+    font-style: italic;
+  }
+  p { color: var(--g700); margin: 12px 0; max-width: 68ch; }
+  ul, ol { color: var(--g700); padding-left: 22px; max-width: 64ch; }
+  ul li, ol li { margin: 6px 0; }
+
+  /* layout: TOC + main */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 56px;
+  }
+  .toc {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    border-left: 2px solid var(--g300);
+    padding-left: 16px;
+  }
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .toc a {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--g500);
+    text-decoration: none;
+    padding: 4px 0;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+  .toc a:hover { color: var(--clay); }
+  .toc .toc-section {
+    margin-top: 14px;
+    color: var(--slate);
+    font-weight: 500;
+  }
+
+  /* links */
+  a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--clay); }
+
+  /* inline code */
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--g100);
+    color: var(--slate);
+    padding: 1.5px 5px;
+    border-radius: 4px;
+  }
+
+  /* callout (left stripe) */
+  .callout {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-left: 3px solid var(--clay);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 24px 0;
+  }
+  .callout.warning { border-left-color: var(--amber); }
+  .callout.danger  { border-left-color: var(--rust); }
+  .callout.success { border-left-color: var(--olive); }
+  .callout.info    { border-left-color: var(--steel); }
+  .callout .callout-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-bottom: 6px;
+  }
+  .callout p { margin: 0; color: var(--g700); }
+  .callout p + p { margin-top: 10px; }
+
+  /* prompt box */
+  .prompt-box {
+    background: var(--g100);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin: 0 0 36px;
+  }
+  .prompt-box .label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-bottom: 8px;
+  }
+  .prompt-box p {
+    margin: 0;
+    color: var(--g700);
+    font-style: italic;
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.55;
+    max-width: 72ch;
+  }
+
+  /* card */
+  .card {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .card-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-bottom: 8px;
+  }
+  .card h3 { margin: 0 0 6px; }
+  .card p  { color: var(--g700); font-size: 14.5px; margin: 0; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  /* badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.success { background: rgba(120,140,93,.16); color: var(--olive); }
+  .badge.danger  { background: rgba(176,74,63,.16);  color: var(--rust); }
+  .badge.warning { background: rgba(199,142,63,.18); color: var(--amber); }
+  .badge.info    { background: rgba(92,124,163,.16); color: var(--steel); }
+  .badge.neutral { background: var(--g100);           color: var(--g700); }
+
+  /* code block */
+  pre.code {
+    background: var(--slate);
+    color: #E6E3DA;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 18px 0;
+  }
+  pre.code .kw { color: #D9A55F; }
+  pre.code .st { color: #A8B991; }
+  pre.code .cm { color: #87867F; }
+  pre.code .fn { color: #E3DACC; }
+  pre.code .hl { color: #D97757; }
+
+  /* mapping table (CSS grid) */
+  .mapping {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1.5px solid var(--g300);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .mapping .head {
+    background: var(--g100);
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    border-bottom: 1.5px solid var(--g300);
+  }
+  .mapping .cell {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--g100);
+    font-size: 14px;
+    color: var(--g700);
+  }
+  .mapping .cell.mono {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--slate);
+  }
+  .mapping .cell:nth-last-child(-n+2) { border-bottom: none; }
+
+  /* maturity ladder */
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .rung {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .rung.low    { border-top: 3px solid var(--rust); }
+  .rung.med    { border-top: 3px solid var(--amber); }
+  .rung.high   { border-top: 3px solid var(--olive); }
+  .rung .rung-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-bottom: 4px;
+  }
+  .rung h3 {
+    font-family: var(--serif);
+    margin: 0 0 12px;
+    font-size: 17px;
+  }
+  .rung ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13.5px;
+    color: var(--g700);
+  }
+  .rung ul li { margin: 4px 0; line-height: 1.45; }
+
+  /* compare grid for lint-error vs agent-error */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 20px 0;
+  }
+  .option {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .option .tradeoff {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--clay);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .option h3 { margin: 0 0 10px; font-size: 16px; }
+
+  /* details */
+  details {
+    border: 1.5px solid var(--g300);
+    border-radius: 10px;
+    padding: 14px 18px;
+    background: var(--paper);
+    margin: 14px 0;
+  }
+  details summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--slate);
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: "▸";
+    color: var(--clay);
+    font-size: 11px;
+    transition: transform .15s ease;
+    display: inline-block;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details > *:not(summary) { margin-top: 12px; }
+
+  /* numbered headings (the 12 principles) */
+  .principle-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--clay);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 10px;
+    font-weight: 500;
+  }
+
+  /* row list */
+  .row-list { display: flex; flex-direction: column; margin: 16px 0; }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--g100);
+    font-size: 14px;
+    color: var(--g700);
+  }
+  .row:last-child { border-bottom: none; }
+  .row .meta { font-family: var(--mono); font-size: 12px; color: var(--g500); }
+
+  /* footer */
+  footer.page-footer {
+    margin-top: 96px;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--g300);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* diagrams */
+  .diagram-wrap {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+  .diagram-wrap .diagram-caption {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--g500);
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  /* pull quote */
+  .pullquote {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.35;
+    color: var(--slate);
+    font-style: italic;
+    border-left: 3px solid var(--clay);
+    padding: 8px 0 8px 22px;
+    margin: 32px 0;
+    max-width: 60ch;
+  }
+  .pullquote .attribution {
+    display: block;
+    font-style: normal;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 12px;
+  }
+
+  /* mobile */
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc { display: none; }
+    .grid-2, .grid-3, .compare, .ladder, .mapping { grid-template-columns: 1fr; }
+    .wrap { padding: 0 20px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Article explainer · OpenAI internal-beta retro</div>
+    <h1>The repo as an <em>operating system</em> for agents</h1>
+    <p class="lead">Why agent productivity compounds only when the codebase contains the maps, tools, tests, and feedback loops the agent needs to self-correct — and how OpenAI built one.</p>
+  </header>
+
+  <div class="layout">
+
+    <nav class="toc">
+      <span class="toc-label">On this page</span>
+      <a href="#thesis">The core thesis</a>
+      <a href="#tldr">TL;DR</a>
+      <a href="#loop">The feedback loop</a>
+
+      <a href="#practices" class="toc-section">Twelve practices</a>
+      <a href="#p1">1 · System of record</a>
+      <a href="#p2">2 · AGENTS.md as map</a>
+      <a href="#p3">3 · Enforceable architecture</a>
+      <a href="#p4">4 · Errors that teach</a>
+      <a href="#p5">5 · Local validation</a>
+      <a href="#p6">6 · Local observability</a>
+      <a href="#p7">7 · Plans as artifacts</a>
+      <a href="#p8">8 · Skills &amp; playbooks</a>
+      <a href="#p9">9 · Boring tech</a>
+      <a href="#p10">10 · Encoded taste</a>
+      <a href="#p11">11 · Agent-to-agent review</a>
+      <a href="#p12">12 · Maturity &amp; merge</a>
+
+      <a href="#blueprint" class="toc-section">Blueprint</a>
+      <a href="#priority" class="toc-section">Where to start</a>
+      <a href="#principle" class="toc-section">Distilled principle</a>
+    </nav>
+
+    <main>
+
+      <!-- the original ask, paraphrased -->
+      <div class="prompt-box">
+        <span class="label">The article in one sentence</span>
+        <p>OpenAI shipped ~1,500 PRs across five months with Codex generating all code, tests, CI, docs, observability and tooling — and the human engineers' job shifted from writing code to designing the environment that lets agents do reliable work.</p>
+      </div>
+
+      <h2 id="thesis">The core thesis</h2>
+      <p>The article is not really about <em>"agents can write code."</em> That part is unremarkable now. The interesting claim is that turning a normal repo into one that agents can operate inside is a separate, deliberate engineering project — and the payoff (OpenAI estimates a 10× speedup over hand-writing) is gated by how thoroughly you do it.</p>
+
+      <p>The shift: humans stop being the bottleneck on code, and become the bottleneck on <em>intent, environment, and feedback</em>. Anything that does not live in the repository — Slack threads, Google Docs, tribal memory, the half-remembered review comment from six months ago — is effectively invisible to the agent. From the agent's point of view, inaccessible knowledge does not exist.</p>
+
+      <div class="callout">
+        <div class="callout-label">TL;DR</div>
+        <p id="tldr">A normal repo is optimized for humans who already understand the project. An agent-first repo is optimized for a tireless but literal worker that needs <b>maps</b> (AGENTS.md, ARCHITECTURE.md), <b>local truth</b> (validated environments, observability), <b>executable feedback</b> (structural lints with remediation hints), <b>explicit boundaries</b> (encoded architecture, golden principles), and <b>self-service diagnostics</b> (worktrees, traces, screenshots). Documentation alone is not enough; rules have to fail loudly in CI.</p>
+      </div>
+
+      <h2 id="loop">Why "compounds" is the load-bearing word</h2>
+      <p>The reason this matters more than a one-off productivity boost: each piece of repo infrastructure raises the ceiling of what the next agent run can attempt without supervision. A failing CI check that tells the agent <em>why</em> the rule exists and <em>how</em> to fix it turns every CI run into a tutor. A local browser-automation harness lets the agent prove a UI works instead of asking a human to look. A checked-in execution plan preserves intent across long runs.</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 760 360" style="width:100%; height:auto; display:block;">
+          <defs>
+            <marker id="arrow"     viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#87867F"/></marker>
+            <marker id="arrow-ok"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#788C5D"/></marker>
+            <marker id="arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B04A3F"/></marker>
+          </defs>
+
+          <!-- Human: intent -->
+          <g>
+            <rect x="30" y="150" width="150" height="64" rx="10"
+                  fill="rgba(92,124,163,0.10)" stroke="#5C7CA3" stroke-width="1.5"/>
+            <text x="105" y="178" text-anchor="middle"
+                  font-family="ui-serif, Georgia, serif" font-size="14" fill="#141413">Human</text>
+            <text x="105" y="198" text-anchor="middle"
+                  font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">intent · review · taste</text>
+          </g>
+
+          <!-- Agent -->
+          <g>
+            <rect x="305" y="150" width="150" height="64" rx="10"
+                  fill="rgba(217,119,87,0.10)" stroke="#D97757" stroke-width="1.5"/>
+            <text x="380" y="178" text-anchor="middle"
+                  font-family="ui-serif, Georgia, serif" font-size="14" fill="#141413">Agent</text>
+            <text x="380" y="198" text-anchor="middle"
+                  font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">writes · runs · reads back</text>
+          </g>
+
+          <!-- Repo / environment (the OS) -->
+          <g>
+            <rect x="580" y="40" width="160" height="280" rx="12"
+                  fill="rgba(120,140,93,0.08)" stroke="#788C5D" stroke-width="1.5"/>
+            <text x="660" y="68" text-anchor="middle"
+                  font-family="ui-serif, Georgia, serif" font-size="14" fill="#141413">Repo as OS</text>
+            <text x="660" y="92" text-anchor="middle"
+                  font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">the agent's world</text>
+
+            <g font-family="ui-monospace, Menlo, monospace" font-size="10.5" fill="#3D3D3A">
+              <text x="600" y="124">AGENTS.md</text>
+              <text x="600" y="144">ARCHITECTURE.md</text>
+              <text x="600" y="164">structural lints</text>
+              <text x="600" y="184">make validate</text>
+              <text x="600" y="204">e2e + screenshots</text>
+              <text x="600" y="224">local observability</text>
+              <text x="600" y="244">exec-plans/</text>
+              <text x="600" y="264">.agents/skills/</text>
+              <text x="600" y="284">golden principles</text>
+              <text x="600" y="304">quality audit</text>
+            </g>
+          </g>
+
+          <!-- arrows: human -> agent (intent) -->
+          <path d="M180,182 L303,182" stroke="#87867F" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+          <text x="242" y="172" text-anchor="middle"
+                font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">intent</text>
+
+          <!-- agent -> repo -->
+          <path d="M455,170 L578,150" stroke="#D97757" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+          <text x="510" y="148" text-anchor="middle"
+                font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#D97757">writes</text>
+
+          <!-- repo -> agent (feedback) -->
+          <path d="M578,210 L455,194" stroke="#788C5D" stroke-width="1.5" fill="none" marker-end="url(#arrow-ok)"/>
+          <text x="510" y="220" text-anchor="middle"
+                font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#788C5D">feedback</text>
+
+          <!-- self-correction loop on agent -->
+          <path d="M340,150 Q280,80 380,80 Q480,80 420,150" stroke="#87867F" stroke-width="1.5"
+                fill="none" marker-end="url(#arrow)" stroke-dasharray="4 4"/>
+          <text x="380" y="74" text-anchor="middle"
+                font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">self-correct</text>
+
+          <!-- human reviews agent (light) -->
+          <path d="M105,150 Q200,60 380,140" stroke="#87867F" stroke-width="1.5"
+                fill="none" marker-end="url(#arrow)" stroke-dasharray="4 4" opacity="0.6"/>
+          <text x="230" y="100" text-anchor="middle"
+                font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">judgment-heavy review only</text>
+        </svg>
+        <div class="diagram-caption">Humans set intent and judge outcomes. The repo carries the feedback loop.</div>
+      </div>
+
+      <h2 id="practices">Twelve practices, in detail</h2>
+      <p>These are the load-bearing ideas from the article, reordered slightly for narrative flow. The pattern across all of them is the same: take something that normally lives in tribal memory or human review, and push it into <em>versioned, mechanically-checked</em> repo artifacts.</p>
+
+      <!-- ============================== P1 ============================== -->
+      <h3 id="p1"><span class="principle-num">01</span>Treat the repo as the system of record</h3>
+      <p>If it matters and it lives in Slack, Notion, an old PR comment, or a senior engineer's head, the agent cannot use it. OpenAI pushed product principles, architecture, design history, quality expectations, schemas, execution plans, and tech-debt notes into the repository itself — not as more docs, but as <em>versioned, discoverable, repo-local operational knowledge</em>.</p>
+
+      <pre class="code"><span class="cm"># a sketch of what the repo should contain</span>
+AGENTS.md
+ARCHITECTURE.md
+docs/
+  product-specs/
+  design-docs/
+  exec-plans/
+    active/
+    completed/
+    tech-debt-tracker.md
+  generated/
+    db-schema.md
+    api-schema.md
+  SECURITY.md
+  RELIABILITY.md
+  QUALITY_SCORE.md</pre>
+
+      <div class="callout info">
+        <div class="callout-label">The framing</div>
+        <p>"From the agent's point of view, inaccessible knowledge doesn't exist." That sentence does almost all the work — every practice below is a corollary.</p>
+      </div>
+
+      <!-- ============================== P2 ============================== -->
+      <h3 id="p2"><span class="principle-num">02</span>Keep AGENTS.md short: map, not manual</h3>
+      <p>OpenAI's first attempt was a giant AGENTS.md that tried to capture everything. The failure modes were predictable: it crowded out task context, made every instruction read with equal weight, drifted out of sync with reality, and was nearly impossible to verify mechanically.</p>
+      <p>The fix is to treat AGENTS.md as a <b>table of contents</b> that points to deeper, more specialized repo docs. The Codex docs make the same point: durable repo guidance (layout, build/test commands, conventions, PR expectations, constraints, verification rules) lives in AGENTS.md, but the moment it grows large, split into task-specific docs and reference them. For monorepos, nested AGENTS.md files near specialized subdirectories let more specific guidance override broader rules.</p>
+
+      <pre class="code"><span class="cm"># AGENTS.md</span>
+<span class="hl">## Repo map</span>
+- Backend: services/api/
+- Frontend: apps/web/
+- Shared types: packages/types/
+- Architecture guide: ARCHITECTURE.md
+- Review checklist: docs/code-review.md
+- Reliability rules: docs/RELIABILITY.md
+
+<span class="hl">## Standard commands</span>
+- Install:        make setup
+- Unit tests:     make test
+- Typecheck:      make typecheck
+- Lint:           make lint
+- Full validation: make validate
+
+<span class="hl">## Done means</span>
+- Relevant tests pass.
+- Lint/typecheck pass.
+- The diff has been self-reviewed.
+- User-facing behavior is validated, not merely compiled.</pre>
+
+      <!-- ============================== P3 ============================== -->
+      <h3 id="p3"><span class="principle-num">03</span>Make architecture enforceable, not aspirational</h3>
+      <p>The article's sharpest engineering lesson: documentation alone will not keep an agent-generated codebase coherent. Agents will produce locally-correct code that violates global structure, and they will do it faster than humans can catch it in review. The fix is to encode the architecture as mechanical checks that fail loudly.</p>
+
+      <div class="mapping">
+        <div class="head">Architecture principle</div>
+        <div class="head">Mechanical enforcement</div>
+
+        <div class="cell">Services cannot import UI code</div>
+        <div class="cell mono">import-boundary linter</div>
+
+        <div class="cell">DB access only through repos</div>
+        <div class="cell mono">static dependency check</div>
+
+        <div class="cell">External data parsed at boundary</div>
+        <div class="cell mono">schema-validation test</div>
+
+        <div class="cell">No giant files</div>
+        <div class="cell mono">file-size lint</div>
+
+        <div class="cell">All handlers emit structured logs</div>
+        <div class="cell mono">custom lint</div>
+
+        <div class="cell">All APIs have typed contracts</div>
+        <div class="cell mono">schema generation check</div>
+
+        <div class="cell">No unowned docs</div>
+        <div class="cell mono">docs metadata check</div>
+      </div>
+
+      <p>The shift is small in words and large in practice: stop <em>asking</em> the agent to follow architecture, and start <em>encoding</em> the architecture so that violations fail. This is the single highest-leverage move in the article.</p>
+
+      <!-- ============================== P4 ============================== -->
+      <h3 id="p4"><span class="principle-num">04</span>Write linter errors for agents, not just humans</h3>
+      <p>Normal lint errors are designed for a human who already understands the project. Agent-optimized lint errors are designed for a worker that needs the rationale and the repair pattern injected directly into its context. OpenAI explicitly built remediation guidance into their custom lint messages — turning CI from a gate into a tutor.</p>
+
+      <div class="compare">
+        <div class="option">
+          <div class="tradeoff">Optimizes for · brevity</div>
+          <h3>Human-facing error</h3>
+          <pre class="code" style="margin-top:8px"><span class="cm">Forbidden import:</span>
+services/foo may not import
+runtime/bar.</pre>
+        </div>
+        <div class="option" style="border-color: var(--clay); border-width: 1.5px;">
+          <div class="tradeoff" style="color: var(--clay)">Optimizes for · agent self-repair</div>
+          <h3>Agent-optimized error</h3>
+          <pre class="code" style="margin-top:8px"><span class="cm">Forbidden import:</span>
+services/foo may not import
+runtime/bar.
+
+<span class="hl">Why:</span>
+- Domain services must not depend
+  on runtime wiring.
+- Preserves testability, prevents
+  circular dependencies.
+
+<span class="hl">Fix:</span>
+- Move shared logic to packages/core/
+- Or inject runtime behavior through
+  Providers.
+- See ARCHITECTURE.md#dependency-direction</pre>
+        </div>
+      </div>
+
+      <p>Every failing check should tell the agent: <b>what failed</b>, <b>why the rule exists</b>, <b>where to read more</b>, and <b>the expected repair pattern</b>. Without those four, the agent's only recourse is to thrash.</p>
+
+      <!-- ============================== P5 ============================== -->
+      <h3 id="p5"><span class="principle-num">05</span>Design local environments so agents can validate their own work</h3>
+      <p>OpenAI made the app bootable <em>per git worktree</em>, wired browser automation into the agent runtime, and gave Codex direct access to DOM snapshots, screenshots, navigation, logs, metrics, and traces. The point of this stack is not the individual pieces — it is that the agent can move from <em>"I changed code"</em> to <em>"I proved the behavior works"</em> without asking a human to manually inspect the app.</p>
+
+      <pre class="code"><span class="cm"># the one-command surface a serious repo should have</span>
+make setup
+make dev
+make test
+make e2e
+make validate
+make smoke
+
+<span class="cm"># and for web apps:</span>
+make dev-worktree       <span class="cm"># boot app for this branch/worktree</span>
+make e2e-headed         <span class="cm"># browser-visible validation</span>
+make e2e-screenshots    <span class="cm"># saves screenshots/videos</span>
+make inspect-logs
+make inspect-traces</pre>
+
+      <div class="callout warning">
+        <div class="callout-label">Why worktrees specifically</div>
+        <p>Per-worktree isolation lets multiple agent runs validate themselves in parallel without stepping on shared state — databases, ports, fixture files. This is what turns "the agent ran the tests" from an aspiration into a default.</p>
+      </div>
+
+      <!-- ============================== P6 ============================== -->
+      <h3 id="p6"><span class="principle-num">06</span>Make observability available locally</h3>
+      <p>OpenAI exposed logs, metrics, and traces to Codex through a local, ephemeral observability stack per worktree. With that in place, prompts like <em>"ensure startup completes under 800ms"</em> or <em>"no span in these user journeys exceeds two seconds"</em> become tractable — they have a queryable answer rather than an opinion.</p>
+
+      <pre class="code">observability/
+  docker-compose.yml
+  dashboards/
+  queries/
+    startup-errors.logql
+    slow-spans.traceql
+    endpoint-latency.promql
+scripts/
+  run_observed_smoke_test.sh
+  collect_diagnostics.sh</pre>
+
+      <p>Acceptance criteria can now be written as something the agent can verify, not assert:</p>
+
+      <div class="callout success">
+        <div class="callout-label">Done when</div>
+        <p><code>make observed-smoke</code> passes. No startup errors in local logs. p95 latency for <code>/api/search</code> is below 500ms under the smoke workload. No critical trace span exceeds 2s.</p>
+      </div>
+
+      <!-- ============================== P7 ============================== -->
+      <h3 id="p7"><span class="principle-num">07</span>Treat plans as first-class repo artifacts</h3>
+      <p>For multi-step work, OpenAI checked plans into the repo: lightweight plans for small work, execution plans for complex work, separate <code>active/</code> and <code>completed/</code> directories, decision logs, and a technical-debt tracker. This is especially important for long agent runs because it preserves intent, decisions, and partial progress <em>outside the chat thread</em> — where it can survive context truncation and hand-off to a fresh agent.</p>
+
+      <pre class="code">docs/exec-plans/
+  active/
+    2026-05-14-add-billing-retry.md
+  completed/
+    2026-05-10-migrate-auth-provider.md
+  tech-debt-tracker.md</pre>
+
+      <details>
+        <summary>What a good execution plan template contains</summary>
+        <ul>
+          <li><b>Goal</b> &middot; one-sentence outcome</li>
+          <li><b>Non-goals</b> &middot; what this work is <em>not</em></li>
+          <li><b>Current behavior</b> &middot; how things work today</li>
+          <li><b>Target behavior</b> &middot; how things should work</li>
+          <li><b>Files likely involved</b> &middot; the agent's starting map</li>
+          <li><b>Risks</b> &middot; with severity</li>
+          <li><b>Implementation steps</b> &middot; ordered, ticked off as completed</li>
+          <li><b>Validation plan</b> &middot; what passes mean it's done</li>
+          <li><b>Decision log</b> &middot; choices made and why, appended live</li>
+          <li><b>Progress log</b> &middot; what was done in each session</li>
+          <li><b>Done when</b> &middot; the terminal checklist</li>
+        </ul>
+      </details>
+
+      <!-- ============================== P8 ============================== -->
+      <h3 id="p8"><span class="principle-num">08</span>Convert repeated prompts into skills or playbooks</h3>
+      <p>The Codex skills model uses <em>progressive disclosure</em>: the agent initially sees only the skill name, description, and path, and loads the full instructions only when the skill becomes relevant. That means a repo can carry many specialized workflows without crowding context. Rule of thumb: when you reuse the same prompt twice, turn it into a skill, a checklist, a script, or an AGENTS rule.</p>
+
+      <pre class="code">.agents/
+  skills/
+    code-review/
+      SKILL.md
+    incident-triage/
+      SKILL.md
+    migration-plan/
+      SKILL.md
+    test-failure-debugging/
+      SKILL.md
+    observability-triage/
+      SKILL.md
+    release-notes/
+      SKILL.md</pre>
+
+      <!-- ============================== P9 ============================== -->
+      <h3 id="p9"><span class="principle-num">09</span>Prefer boring, inspectable, composable technology</h3>
+      <p>OpenAI explicitly favored dependencies and abstractions that agents could <em>reason about inside the repo</em>, and sometimes found it cheaper to reimplement a small subset of functionality than to work around an opaque upstream. This isn't an austerity move — it's a recognition that dependency choices now affect <em>agent legibility</em>, not just human productivity.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-eyebrow">Prefer</div>
+          <h3>Inspectable building blocks</h3>
+          <p>Stable frameworks with common conventions. Typed interfaces and schemas. Explicit wrappers around external services. Generated artifacts kept visible when they help agents reason.</p>
+        </div>
+        <div class="card">
+          <div class="card-eyebrow">Avoid</div>
+          <h3>Magic boxes</h3>
+          <p>Clever metaprogramming without thorough documentation. Opaque "magic" libraries for core behavior. Deep dependency chains where the runtime behavior is far from the source.</p>
+        </div>
+      </div>
+
+      <!-- ============================== P10 ============================== -->
+      <h3 id="p10"><span class="principle-num">10</span>Capture human taste once, then enforce it continuously</h3>
+      <p>OpenAI's team initially spent significant time manually cleaning up "AI slop." That doesn't scale. The shift was to encode <em>golden principles</em> into the repo and run recurring cleanup tasks that scan for deviations, update quality grades, and open targeted refactor PRs.</p>
+
+      <pre class="code"><span class="cm"># GOLDEN_PRINCIPLES.md</span>
+- Prefer shared utilities over duplicated helpers.
+- Validate external data at system boundaries.
+- Keep domain logic independent of transport/runtime code.
+- Use structured logging for all service entry points.
+- Prefer narrow, named abstractions over ad hoc object shapes.
+- Update docs when changing public behavior.</pre>
+
+      <pre class="code">scripts/
+  quality_audit.py
+  stale_docs_check.py
+  detect_duplicate_helpers.py
+  dependency_boundary_check.py
+.github/
+  workflows/
+    quality-audit.yml</pre>
+
+      <div class="callout">
+        <div class="callout-label">The pattern</div>
+        <p>Write down what good taste looks like, then run something that grades the codebase against it on a schedule. The grade is the lever — agents can be tasked with raising it, and humans can audit the grade rather than the diffs.</p>
+      </div>
+
+      <!-- ============================== P11 ============================== -->
+      <h3 id="p11"><span class="principle-num">11</span>Push review toward agent-to-agent, keep humans for judgment</h3>
+      <p>OpenAI pushed much of the review surface onto agents reviewing agents — code-review skills, security and reliability reviewers on sensitive changes — with humans focused on prioritization, translating user feedback into acceptance criteria, and judgment-heavy areas. The point is not to remove humans; it is to remove humans from the parts where they add nothing.</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 760 240" style="width:100%; height:auto; display:block;">
+          <defs>
+            <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#87867F"/></marker>
+          </defs>
+
+          <g font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#141413">
+            <!-- step 1 -->
+            <rect x="20"  y="90" width="110" height="60" rx="8" fill="rgba(217,119,87,0.10)" stroke="#D97757" stroke-width="1.5"/>
+            <text x="75" y="118" text-anchor="middle">agent</text>
+            <text x="75" y="134" text-anchor="middle" fill="#87867F">opens PR</text>
+
+            <!-- step 2 -->
+            <rect x="155" y="90" width="110" height="60" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+            <text x="210" y="118" text-anchor="middle">self-review</text>
+            <text x="210" y="134" text-anchor="middle" fill="#87867F">+ tests/lint/types</text>
+
+            <!-- step 3 -->
+            <rect x="290" y="90" width="110" height="60" rx="8" fill="#FFFFFF" stroke="#141413" stroke-width="1.5"/>
+            <text x="345" y="118" text-anchor="middle">code-review</text>
+            <text x="345" y="134" text-anchor="middle" fill="#87867F">agent skill</text>
+
+            <!-- step 4 -->
+            <rect x="425" y="90" width="130" height="60" rx="8" fill="rgba(199,142,63,0.10)" stroke="#C78E3F" stroke-width="1.5"/>
+            <text x="490" y="118" text-anchor="middle">sec / reliability</text>
+            <text x="490" y="134" text-anchor="middle" fill="#87867F">if sensitive</text>
+
+            <!-- step 5 -->
+            <rect x="580" y="90" width="120" height="60" rx="8" fill="rgba(120,140,93,0.10)" stroke="#788C5D" stroke-width="1.5"/>
+            <text x="640" y="118" text-anchor="middle">human</text>
+            <text x="640" y="134" text-anchor="middle" fill="#87867F">judgment-heavy</text>
+          </g>
+
+          <!-- edges -->
+          <g stroke="#87867F" stroke-width="1.5" fill="none">
+            <path d="M130,120 L153,120" marker-end="url(#arrow2)"/>
+            <path d="M265,120 L288,120" marker-end="url(#arrow2)"/>
+            <path d="M400,120 L423,120" marker-end="url(#arrow2)"/>
+            <path d="M555,120 L578,120" marker-end="url(#arrow2)"/>
+          </g>
+
+          <!-- caption labels -->
+          <g font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#87867F">
+            <text x="380" y="40" text-anchor="middle" letter-spacing="0.08em">REVIEW PIPELINE · AGENTS DO THE BULK, HUMANS DO THE JUDGMENT</text>
+            <text x="380" y="200" text-anchor="middle">each upstream stage filters out what doesn't need the next</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">Sensitive changes (auth, payments, security, PII, infra) keep stronger human gates.</div>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-label">Don't copy this blindly</div>
+        <p>The article is explicit: OpenAI's minimal blocking gates depend on the specific repo structure and tooling they invested in. It would be <em>irresponsible</em> in lower-throughput or less-instrumented environments. For enterprise or regulated repos, keep stronger gates around auth, payments, data deletion, security boundaries, PII/PHI, production infra, permission changes, dependency upgrades, and model/tool access.</p>
+      </div>
+
+      <!-- ============================== P12 ============================== -->
+      <h3 id="p12"><span class="principle-num">12</span>Change merge philosophy only after validation is strong</h3>
+      <p>OpenAI argues that when agent throughput is high, short-lived PRs with cheap follow-up corrections can beat slow blocking gates. But the throughput is a <em>consequence</em> of the validation strength, not a substitute for it. Optimizing for PR velocity before the repo has strong validation is the article's most common failure mode for imitators.</p>
+
+      <div class="ladder">
+        <div class="rung low">
+          <div class="rung-eyebrow">Stage · 1</div>
+          <h3>Low-maturity repo</h3>
+          <ul>
+            <li>Human review required</li>
+            <li>CI must pass</li>
+            <li>Manual QA for risky changes</li>
+            <li>Agents help, but humans gate</li>
+          </ul>
+        </div>
+        <div class="rung med">
+          <div class="rung-eyebrow">Stage · 2</div>
+          <h3>Medium-maturity repo</h3>
+          <ul>
+            <li>Agent self-review required</li>
+            <li>Strong CI &amp; structural lints</li>
+            <li>Human review for sensitive domains</li>
+            <li>Small PRs encouraged</li>
+          </ul>
+        </div>
+        <div class="rung high">
+          <div class="rung-eyebrow">Stage · 3</div>
+          <h3>High-maturity repo</h3>
+          <ul>
+            <li>Agent-to-agent review</li>
+            <li>Structural lints + local observability</li>
+            <li>Worktree isolation</li>
+            <li>Automated cleanup &amp; refactor loops</li>
+            <li>Humans for exceptions &amp; product judgment</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ============================== blueprint ============================== -->
+      <h2 id="blueprint">A concrete agent-first repo blueprint</h2>
+      <p>The point of the structure below is not the directory names — it is that <b>every repo expectation has a home</b>, and that the home is mechanically discoverable.</p>
+
+      <pre class="code">.
+├── AGENTS.md
+├── ARCHITECTURE.md
+├── README.md
+├── Makefile
+├── .codex/
+│   └── config.toml
+├── .agents/
+│   └── skills/
+│       ├── code-review/
+│       ├── test-debugging/
+│       ├── observability-triage/
+│       └── migration-plan/
+├── docs/
+│   ├── PRODUCT_SENSE.md
+│   ├── RELIABILITY.md
+│   ├── SECURITY.md
+│   ├── QUALITY_SCORE.md
+│   ├── GOLDEN_PRINCIPLES.md
+│   ├── code-review.md
+│   ├── design-docs/
+│   ├── product-specs/
+│   ├── exec-plans/
+│   │   ├── active/
+│   │   ├── completed/
+│   │   └── tech-debt-tracker.md
+│   └── generated/
+├── scripts/
+│   ├── validate_repo_knowledge.py
+│   ├── structural_lint.py
+│   ├── quality_audit.py
+│   └── run_observed_smoke_test.sh
+├── observability/
+│   ├── docker-compose.yml
+│   ├── queries/
+│   └── dashboards/
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+└── .github/
+    └── workflows/
+        ├── ci.yml
+        ├── structural-lints.yml
+        ├── docs-freshness.yml
+        └── quality-audit.yml</pre>
+
+      <div class="mapping">
+        <div class="head">Expectation</div>
+        <div class="head">Where it lives</div>
+
+        <div class="cell">How to work in the repo</div>
+        <div class="cell mono">AGENTS.md</div>
+
+        <div class="cell">Architecture</div>
+        <div class="cell mono">ARCHITECTURE.md + structural lints</div>
+
+        <div class="cell">Product intent</div>
+        <div class="cell mono">docs/product-specs/</div>
+
+        <div class="cell">Complex multi-step plans</div>
+        <div class="cell mono">docs/exec-plans/</div>
+
+        <div class="cell">Review standards</div>
+        <div class="cell mono">docs/code-review.md + review skill</div>
+
+        <div class="cell">Reliability rules</div>
+        <div class="cell mono">docs/RELIABILITY.md + tests</div>
+
+        <div class="cell">Security rules</div>
+        <div class="cell mono">docs/SECURITY.md + checks</div>
+
+        <div class="cell">Repeated workflows</div>
+        <div class="cell mono">.agents/skills/</div>
+
+        <div class="cell">Agent-readable diagnostics</div>
+        <div class="cell mono">observability/ + scripts/</div>
+
+        <div class="cell">Quality / taste</div>
+        <div class="cell mono">GOLDEN_PRINCIPLES.md + audit</div>
+      </div>
+
+      <!-- ============================== priority ============================== -->
+      <h2 id="priority">Where to start (in order)</h2>
+      <p>Don't try to build all of this at once. The order below is calibrated to maximize leverage early — each step makes the next one easier to justify.</p>
+
+      <div class="row-list">
+        <div class="row">
+          <span><b>1.</b> Create a short <code>AGENTS.md</code> with repo map, commands, conventions, and "done means".</span>
+          <span class="meta">~1 day</span>
+        </div>
+        <div class="row">
+          <span><b>2.</b> Add <code>ARCHITECTURE.md</code> with dependency boundaries and examples of allowed/disallowed imports.</span>
+          <span class="meta">~2 days</span>
+        </div>
+        <div class="row">
+          <span><b>3.</b> Add <code>make validate</code> that runs tests, lint, typecheck, and any repo-specific checks.</span>
+          <span class="meta">~1 day</span>
+        </div>
+        <div class="row">
+          <span><b>4.</b> Create <code>docs/exec-plans/</code> for complex agent work.</span>
+          <span class="meta">~0.5 days</span>
+        </div>
+        <div class="row">
+          <span><b>5.</b> Add one custom structural lint for the most common architecture violation.</span>
+          <span class="meta">~2 days</span>
+        </div>
+        <div class="row">
+          <span><b>6.</b> Create one skill for the workflow you repeat most often (PR review, test debugging).</span>
+          <span class="meta">~1 day</span>
+        </div>
+        <div class="row">
+          <span><b>7.</b> Add a docs-freshness check so stale docs don't become agent poison.</span>
+          <span class="meta">~1 day</span>
+        </div>
+        <div class="row">
+          <span><b>8.</b> Add local smoke/e2e validation so agents can prove behavior, not just compile.</span>
+          <span class="meta">~3–5 days</span>
+        </div>
+        <div class="row">
+          <span><b>9.</b> Add quality garbage collection: scheduled audits for duplicates, stale docs, large files, drift.</span>
+          <span class="meta">~3 days</span>
+        </div>
+      </div>
+
+      <!-- ============================== principle ============================== -->
+      <h2 id="principle">The distilled principle</h2>
+
+      <div class="pullquote">
+        A normal repo is optimized for humans who already understand the project. An agent-first repo is optimized for a worker that is tireless but literal: it needs maps, local truth, executable feedback, explicit boundaries, and self-service diagnostics.
+        <span class="attribution">— the article's load-bearing claim</span>
+      </div>
+
+      <p>The corollary is the part that's easy to miss: the best repos will not merely <em>contain</em> code. They will contain the <b>harness that lets humans delegate code safely</b>. That harness is the engineering project. The code is the output.</p>
+
+      <div class="callout">
+        <div class="callout-label">Caveat the article repeats and is worth repeating</div>
+        <p>The 10× number and the minimal blocking gates are downstream of OpenAI's specific investment in repo structure and tooling. They do not generalize without similar investment. The order in "Where to start" matters more than the destination.</p>
+      </div>
+
+      <footer class="page-footer">
+        Generated 2026-05-18 · explainer · agent-first repos
+      </footer>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>
