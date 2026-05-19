@@ -1,0 +1,26 @@
+{
+  "skill_name": "research-blog",
+  "evals": [
+    {
+      "id": 1,
+      "name": "speculative-decoding-throughput",
+      "prompt": "I just finished an experiment comparing a draft-target speculative decoding setup against vanilla autoregressive sampling on Llama-3-70B. Three settings on a single H100 80GB: vanilla, spec-decode with a 1B draft model, spec-decode with a 3B draft model. Same eval set (200 ShareGPT prompts at 1024 max tokens, temperature 0.7, batch=1). Throughput in tokens/sec: vanilla 24.3, 1B-draft 41.2 (+69%), 3B-draft 38.7 (+59%). Acceptance rate: 1B = 0.62, 3B = 0.71. Mean draft compute overhead: 1B = 14% wall, 3B = 26% wall. The 1B-draft wins despite worse acceptance because the draft compute is so cheap. Wall-time per 1024-token completion: vanilla 42.1s, 1B-draft 24.9s, 3B-draft 26.5s. We tested across temperatures 0.3, 0.7, 1.0; the speedup ratio was stable within ~5 pp at each temperature. Caveats: single-GPU only, batch=1 only, ShareGPT distribution only. No quality degradation tests yet. Write this up as a blog post and save it to /tmp/specdec-blog.html.",
+      "expected_output": "A self-contained HTML file at /tmp/specdec-blog.html using the warm-cream/Libre Baskerville aesthetic. Should include TL;DR, setup, method/eval-config section, headline result with stat-row + table, mechanism (why 1B beats 3B despite worse acceptance), bounds on the claim including the listed caveats, what's next. At least one chart (could be a grouped-bar comparison of the three configurations or a scatter of acceptance vs throughput).",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "rag-chunking-ablation",
+      "prompt": "Help me publish a writeup of our RAG chunking ablation. We compared four chunking strategies on a 12k-document internal knowledge base with 800 eval queries: fixed-512-token, fixed-1024-token, semantic-paragraph, sliding-window-512-overlap-128. Retrieval metric is recall@10 against gold-labeled passages, end-to-end metric is GPT-4-judged answer correctness on the 800 queries (paired comparison, same retriever, same generator, only chunking varies). Results: recall@10 = 0.51 / 0.58 / 0.64 / 0.69 respectively. Answer correctness = 0.41 / 0.46 / 0.49 / 0.52. The sliding-window wins on both metrics. Mechanism: it's the only strategy that lets a single chunk contain a complete claim AND its supporting context, because the 128-token overlap bridges chunks at semantic boundaries roughly 73% of the time (manual annotation, n=200 boundaries). We didn't test on multi-hop queries; the 800 queries are all single-hop. Save the post to ./reports/rag-chunking-writeup.html in this project.",
+      "expected_output": "Self-contained HTML file at ./reports/rag-chunking-writeup.html (relative to user's project), warm-cream aesthetic, with a 4-row comparison table for the four chunking strategies, a stat-row of the headline numbers, mechanism section explaining why sliding-window wins, bounds noting the single-hop limitation. At least one chart visualizing the four-strategy comparison.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "no-experiment-just-readme",
+      "prompt": "Hey I want a README for my new Python package called fastsemcache. It's a semantic caching library for LLM responses. Has a few functions, takes 2 lines to set up, supports redis/sqlite/memory backends. Can you make it?",
+      "expected_output": "The skill should NOT trigger here — this is a README request, not a research blog post about an experiment with results. Either: (a) Claude declines to use the skill and produces a normal markdown README, or (b) Claude explicitly says the research-blog skill is the wrong fit and offers to write a README instead. Triggering the skill on this prompt and producing a research-blog HTML page is a failure.",
+      "files": []
+    }
+  ]
+}

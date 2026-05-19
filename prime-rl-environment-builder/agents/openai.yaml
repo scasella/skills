@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prime RL Environments"
+  short_description: "Build, release, and validate Prime RL envs"
+  default_prompt: "Use $prime-rl-environment-builder to design, harden, publish, and validate a Prime verifiers environment."

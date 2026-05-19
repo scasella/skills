@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ARTICLE_TITLE}} — {{LAB_NAME}}</title>
+  <meta name="description" content="{{META_DESCRIPTION}}" />
+  <meta property="og:title" content="{{ARTICLE_TITLE}}" />
+  <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+  <meta property="og:type" content="article" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ==========================================================
+       Design tokens
+       ========================================================== */
+    :root {
+      --bg:           #F9F9F6;
+      --accent:       #090909;
+      --fg:           #3B3B39;
+      --fg-soft:      #3B3B39;
+      --fg-mute:      #595856;
+      --fg-faint:     #969592;
+      --on-dark:      #DFDEDA;
+      --surface-muted:#EFEFEB;
+
+      /* Chart palette — muted earth tones, harmonised with body */
+      --chart-primary:   #3B3B39;
+      --chart-secondary: #969592;
+      --chart-axis:      #C8C7C2;
+      --chart-grid:      #E4E3DE;
+      --chart-accent-1:  #5C8A95;  /* sage-teal */
+      --chart-accent-2:  #8B6F8C;  /* dusty mauve */
+
+      --font-serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+      --font-sans:  'Inter', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      background: var(--bg);
+      overflow-y: scroll;
+      scrollbar-color: #bbb #f4f4f4;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+      font-variant-ligatures: common-ligatures contextual;
+      font-variant-numeric: oldstyle-nums proportional-nums;
+      font-optical-sizing: auto;
+      font-synthesis: none;
+    }
+    html::-webkit-scrollbar { width: 16px; }
+    html::-webkit-scrollbar-track { background: #f4f4f4; }
+    html::-webkit-scrollbar-thumb { background: #bbb; border-radius: 5px; }
+
+    ::selection { background: rgba(0,0,0,0.08); color: inherit; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-serif);
+      background: var(--bg);
+      color: var(--accent);
+      display: flex;
+      flex-direction: column;
+      text-wrap: pretty;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .subtitle { text-wrap: balance; }
+
+    /* ==========================================================
+       Layout primitives
+       ========================================================== */
+    .page-surface {
+      background: var(--bg);
+      display: flex;
+      flex: 1 0 auto;
+      flex-direction: column;
+      width: 100%;
+    }
+    .main { flex: 1; }
+
+    /* ==========================================================
+       Header
+       ========================================================== */
+    .perspectives-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 2.5rem;
+      width: 100%;
+    }
+    .logo-centered {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      color: var(--fg-soft);
+      text-decoration: none;
+    }
+    .logo-centered .accent { color: var(--accent); }
+    .contact-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.75rem;
+      margin-right: -0.75rem;
+      border-radius: 999px;
+      color: var(--fg);
+      transition: background 240ms cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+    .contact-link:hover, .contact-link:focus-visible {
+      background: var(--surface-muted);
+    }
+
+    /* ==========================================================
+       Article layout
+       ========================================================== */
+    .benchmarks-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 2rem 6rem;
+    }
+    .benchmarks-content h1 {
+      font-size: 48px;
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin-top: 144px;
+    }
+    .benchmarks-content .subtitle {
+      font-size: 18px;
+      font-weight: 300;
+      line-height: 1.5;
+      color: var(--fg);
+      margin-top: 10px;
+      margin-bottom: 0.5em;
+    }
+    .benchmarks-content .date {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--fg-faint);
+      margin-top: 1em;
+      text-transform: uppercase;
+    }
+
+    .paper-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 26px 0;
+      flex-wrap: wrap;
+    }
+    .paper-links .btn-pill {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1;
+      color: var(--fg);
+      text-decoration: none;
+      background: #fff;
+      border-radius: 999px;
+      padding: 0.85rem 1.2rem 0.95rem;
+      transition: background 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .paper-links .btn-pill:hover { background: var(--surface-muted); }
+
+    /* ==========================================================
+       Article body
+       ========================================================== */
+    .benchmarks-body { margin: 96px 0 48px; }
+
+    .benchmarks-body .body-main {
+      font-size: 17px;
+      line-height: 1.6;
+      margin-top: 1lh;
+    }
+    .benchmarks-body p {
+      font-weight: 400;
+      color: var(--fg-soft);
+      margin-bottom: 1lh;
+    }
+    .benchmarks-body em { font-style: italic; }
+    .benchmarks-body strong { font-weight: 500; color: var(--fg); }
+
+    .benchmarks-body a, .benchmarks-body a:visited {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--fg-faint);
+      padding-bottom: 1px;
+    }
+    .benchmarks-body a:hover { border-bottom-color: var(--accent); }
+
+    .benchmarks-body h2 {
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--fg);
+      margin: 1.75lh 0 24px;
+      letter-spacing: -0.005em;
+    }
+    .benchmarks-body h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--fg);
+      margin: 1.5lh 0 16px;
+      letter-spacing: -0.005em;
+    }
+
+    .benchmarks-body ul, .benchmarks-body ol {
+      padding-left: 1.25em;
+      margin-bottom: 1.5em;
+    }
+    .benchmarks-body ul { list-style: disc; }
+    .benchmarks-body ol { list-style: decimal; }
+    .benchmarks-body li {
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--fg-soft);
+      margin-bottom: 0.6em;
+    }
+    .benchmarks-body li::marker { color: var(--fg-faint); }
+
+    .benchmarks-body code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82em;
+      background: rgba(0,0,0,0.05);
+      padding: 0.08em 0.3em;
+      border-radius: 4px;
+    }
+    .benchmarks-body pre {
+      background: rgba(0,0,0,0.05);
+      padding: 14px 18px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1lh 0;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .benchmarks-body pre code {
+      background: none; padding: 0; border-radius: 0; font-size: inherit;
+    }
+    pre .c { color: var(--fg-faint); font-style: italic; }
+    pre .k { color: var(--accent); }
+    pre .s { color: var(--fg); }
+
+    /* ==========================================================
+       TL;DR — pulled-quote treatment
+       ========================================================== */
+    .tldr {
+      margin: 32px 0 48px;
+      padding: 0 0 0 24px;
+      border-left: 2px solid var(--fg-mute);
+    }
+    .tldr-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .tldr p {
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--fg);
+    }
+    .tldr p + p { margin-top: 0.8em; }
+
+    /* ==========================================================
+       Inline callout
+       ========================================================== */
+    .callout {
+      margin: 1.5lh 0;
+      padding: 20px 24px;
+      background: var(--surface-muted);
+      border-radius: 10px;
+    }
+    .callout-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+      margin-bottom: 8px;
+      display: block;
+    }
+    .callout p {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--fg);
+      margin-bottom: 0;
+    }
+
+    /* ==========================================================
+       Stat row — minimal numbers
+       ========================================================== */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+      margin: 1.5lh 0;
+      border-top: 1px solid var(--chart-grid);
+      border-bottom: 1px solid var(--chart-grid);
+    }
+    @media (min-width: 600px) {
+      .stat-row { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat {
+      padding: 18px 18px;
+      border-right: 1px solid var(--chart-grid);
+    }
+    .stat:first-child { padding-left: 0; }
+    .stat:last-child { border-right: 0; }
+    @media (max-width: 599px) {
+      .stat:nth-child(2n) { border-right: 0; }
+      .stat:nth-child(n+3) { border-top: 1px solid var(--chart-grid); }
+    }
+    .stat .k {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      margin-bottom: 8px;
+      display: block;
+    }
+    .stat .v {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--fg);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .stat .s {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--fg-faint);
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    /* ==========================================================
+       Mode/method cards
+       ========================================================== */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 1.5lh 0;
+    }
+    @media (min-width: 600px) { .mode-grid { grid-template-columns: repeat(2, 1fr); } }
+    .mode-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 22px 22px;
+      border: 1px solid var(--chart-grid);
+    }
+    .mode-card .tag {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      display: block;
+      margin-bottom: 10px;
+    }
+    .mode-card .t {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--fg);
+      display: block;
+      margin-bottom: 8px;
+      letter-spacing: -0.005em;
+    }
+    .mode-card .desc {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--fg-soft);
+    }
+
+    /* ==========================================================
+       Tables
+       ========================================================== */
+    .table-wrap {
+      margin: 1.5lh 0;
+    }
+    .table-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      margin-bottom: 12px;
+    }
+    .table-label .id { color: var(--fg); margin-right: 12px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-serif);
+    }
+    th, td {
+      padding: 11px 14px 11px 0;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 400;
+      border-bottom: 1px solid var(--chart-grid);
+      color: var(--fg);
+    }
+    th {
+      font-family: var(--font-sans);
+      font-weight: 400;
+      color: var(--fg-mute);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--fg-mute);
+    }
+    td.num { font-variant-numeric: tabular-nums; color: var(--fg); }
+    td.pos { color: var(--accent); }
+    td.neg { color: var(--fg-faint); }
+    tr:last-child td { border-bottom: none; }
+    tr.highlight td { background: var(--surface-muted); }
+    tr.totals td { border-top: 1px solid var(--fg-mute); font-weight: 400; }
+
+    /* ==========================================================
+       Figures / chart cards
+       ========================================================== */
+    figure.chart { margin: 1.5lh 0; }
+    figure.chart svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--bg);
+    }
+    figcaption {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--fg-mute);
+      line-height: 1.5;
+      margin-top: 16px;
+    }
+    figcaption strong { color: var(--fg); font-weight: 500; }
+
+    @media (min-width: 960px) {
+      .body-main > figure.chart {
+        width: min(1200px, calc(100vw - 3rem));
+        max-width: none;
+        margin-left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+    @media (min-width: 1400px) {
+      .body-main > figure.chart {
+        width: min(1320px, calc(100vw - 3rem));
+      }
+    }
+
+    /* ==========================================================
+       Honest-scope list
+       ========================================================== */
+    .neg-list {
+      margin: 1.5lh 0;
+      padding: 0;
+      border-top: 1px solid var(--chart-grid);
+    }
+    .neg-list-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      margin: 16px 0 8px;
+      display: block;
+    }
+    .neg-list ul { list-style: none; padding: 0; margin: 0; }
+    .neg-list li {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--chart-grid);
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--fg-soft);
+    }
+    .neg-list li:last-child { border-bottom: 0; }
+    .neg-list li strong { color: var(--fg); font-weight: 500; }
+
+    /* ==========================================================
+       Section break
+       ========================================================== */
+    .break {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4rem 0 3rem;
+      color: var(--fg-faint);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.6em;
+    }
+
+    /* ==========================================================
+       Footer
+       ========================================================== */
+    .site-footer {
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      margin-top: auto;
+      padding: 0;
+    }
+    .site-footer .footer-inner {
+      max-width: 720px;
+      width: 100%;
+      margin: 2rem auto 0;
+      padding: 0 2rem 140px;
+    }
+    .footer-subscribe {
+      display: flex;
+      flex-direction: column;
+      gap: 1lh;
+      max-width: 480px;
+    }
+    .footer-subscribe-label {
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--on-dark);
+      display: block;
+    }
+    .footer-subscribe-row {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      padding: 4px;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+    .footer-subscribe-row:focus-within {
+      border-color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.12);
+    }
+    .footer-subscribe-input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: 0;
+      outline: none;
+      padding: 0.6rem 1rem;
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 300;
+      color: #fff;
+    }
+    .footer-subscribe-input::placeholder { color: rgba(255,255,255,0.45); }
+    .footer-subscribe-button {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1;
+      color: var(--accent);
+      background: #fff;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 1.1rem;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+    .footer-subscribe-button:hover { background: var(--surface-muted); }
+    .footer-meta {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--fg-faint);
+      margin-top: 2rem;
+      line-height: 1.6;
+    }
+    .footer-meta a { color: var(--on-dark); text-decoration: none; border-bottom: 1px dotted rgba(255,255,255,0.25); }
+    .footer-meta a:hover { color: #fff; border-bottom-color: #fff; }
+
+    /* ==========================================================
+       Responsive
+       ========================================================== */
+    @media (max-width: 768px) {
+      .perspectives-header { padding: 1.5rem 1.5rem; }
+      .benchmarks-content { padding: 3rem 1.5rem 4rem; }
+      .benchmarks-content h1 { font-size: 44px; margin-top: 120px; }
+      .benchmarks-body { margin: 72px 0 32px; }
+      .site-footer .footer-inner { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .perspectives-header { padding: 1.25rem 1.25rem; }
+      .benchmarks-content { padding: 2rem 1.25rem 3rem; }
+      .benchmarks-content h1 { font-size: 38px; margin-top: 80px; }
+      .benchmarks-content .subtitle { font-size: 18px; }
+      .benchmarks-body h2 { font-size: 26px; }
+      .benchmarks-body h3 { font-size: 20px; }
+      .benchmarks-body .body-main { font-size: 18px; }
+      .benchmarks-body li { font-size: 18px; }
+      .tldr p { font-size: 18px; }
+      .stat .v { font-size: 24px; }
+      .site-footer .footer-inner { padding: 0 1.25rem 80px; }
+    }
+  </style>
+</head>
+<body class="benchmarks-page">
+  <div class="page-surface">
+
+    <header class="perspectives-header">
+      <a href="{{LAB_URL}}" class="logo-centered">{{LAB_LOGO_LEFT}}<span class="accent">·</span>{{LAB_LOGO_RIGHT}}</a>
+      <a href="mailto:{{CONTACT_EMAIL}}" class="contact-link" aria-label="Contact">Contact</a>
+    </header>
+
+    <main class="main">
+      <article class="benchmarks-content">
+
+        <h1>{{ARTICLE_TITLE}}</h1>
+        <p class="subtitle">{{ARTICLE_SUBTITLE}}</p>
+        <p class="date">{{AUTHOR_NAME_UPPERCASE}} · {{MONTH_YEAR}}</p>
+
+        <div class="paper-links">
+          <a href="{{GITHUB_URL}}" class="btn-pill">Github</a>
+          <a href="{{RECIPE_URL}}" class="btn-pill">Recipe</a>
+        </div>
+
+        <div class="benchmarks-body">
+          <div class="body-main">
+
+            <!-- ============================================================
+                 TL;DR — pulled-quote treatment
+                 Replace each <p> with a 2-4 sentence summary.
+                 Lead the first paragraph with the comparison/setup framing,
+                 then the headline numbers with statistical context.
+                 The Update paragraph is optional — drop it if there's no follow-up.
+                 ============================================================ -->
+            <div class="tldr">
+              <span class="tldr-label">TL;DR</span>
+              <p>
+                {{TLDR_PARAGRAPH_1}}
+              </p>
+              <p>
+                <strong>Update — {{UPDATE_DATE}}.</strong> {{TLDR_UPDATE_PARAGRAPH}}
+              </p>
+            </div>
+
+            <!-- ============================================================
+                 The question
+                 ============================================================ -->
+            <h2 id="question">{{QUESTION_SECTION_TITLE}}</h2>
+
+            <p>{{QUESTION_BACKGROUND_PARAGRAPH}}</p>
+            <p>{{QUESTION_PIVOT_PARAGRAPH}}</p>
+
+            <div class="callout">
+              <span class="callout-label">The question</span>
+              <p>{{THE_QUESTION_ONE_SENTENCE}}</p>
+            </div>
+
+            <p>{{ANSWER_PREVIEW_PARAGRAPH}}</p>
+
+            <!-- ============================================================
+                 Setup
+                 ============================================================ -->
+            <h2 id="setup">Setup — {{SETUP_FRAMING}}</h2>
+
+            <p>{{SETUP_INTRO_LINE}}</p>
+
+            <h3>The backbone</h3>
+            <p>{{BACKBONE_DESCRIPTION}}</p>
+
+            <h3>The model under test</h3>
+            <p>{{MODEL_RECIPE}}</p>
+
+<pre><code><span class="c"># Optional code/prompt template if relevant</span>
+<span class="k">{{CODE_BLOCK_LINE_1}}</span>
+<span class="s">{{CODE_BLOCK_LINE_2}}</span></code></pre>
+
+            <h3>The baseline</h3>
+            <p>{{BASELINE_DESCRIPTION}}</p>
+
+            <div class="callout">
+              <span class="callout-label">What makes this comparison fair</span>
+              <p>{{COMPARISON_FAIRNESS}}</p>
+            </div>
+
+            <div class="stat-row">
+              <div class="stat">
+                <span class="k">{{STAT_1_LABEL}}</span>
+                <div class="v">{{STAT_1_VALUE}}</div>
+                <div class="s">{{STAT_1_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{STAT_2_LABEL}}</span>
+                <div class="v">{{STAT_2_VALUE}}</div>
+                <div class="s">{{STAT_2_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{STAT_3_LABEL}}</span>
+                <div class="v">{{STAT_3_VALUE}}</div>
+                <div class="s">{{STAT_3_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{STAT_4_LABEL}}</span>
+                <div class="v">{{STAT_4_VALUE}}</div>
+                <div class="s">{{STAT_4_SUBLABEL}}</div>
+              </div>
+            </div>
+
+            <!-- ============================================================
+                 Method (mode-grid 2x2)
+                 ============================================================ -->
+            <h2 id="method">{{METHOD_SECTION_TITLE}}</h2>
+
+            <p>{{METHOD_INTRO_PARAGRAPH}}</p>
+
+            <div class="mode-grid">
+              <div class="mode-card">
+                <span class="tag">01 · {{METHOD_STEP_1_VERB}}</span>
+                <span class="t">{{METHOD_STEP_1_TITLE}}</span>
+                <span class="desc">{{METHOD_STEP_1_DESC}}</span>
+              </div>
+              <div class="mode-card">
+                <span class="tag">02 · {{METHOD_STEP_2_VERB}}</span>
+                <span class="t">{{METHOD_STEP_2_TITLE}}</span>
+                <span class="desc">{{METHOD_STEP_2_DESC}}</span>
+              </div>
+              <div class="mode-card">
+                <span class="tag">03 · {{METHOD_STEP_3_VERB}}</span>
+                <span class="t">{{METHOD_STEP_3_TITLE}}</span>
+                <span class="desc">{{METHOD_STEP_3_DESC}}</span>
+              </div>
+              <div class="mode-card">
+                <span class="tag">04 · {{METHOD_STEP_4_VERB}}</span>
+                <span class="t">{{METHOD_STEP_4_TITLE}}</span>
+                <span class="desc">{{METHOD_STEP_4_DESC}}</span>
+              </div>
+            </div>
+
+            <p>{{METHOD_SCOPE_PARAGRAPH}}</p>
+
+            <!-- ============================================================
+                 The headline result
+                 ============================================================ -->
+            <h2 id="result">The headline — {{HEADLINE_PHRASE}}</h2>
+
+            <p>{{HEADLINE_LEAD_PARAGRAPH}}</p>
+
+            <div class="stat-row">
+              <div class="stat">
+                <span class="k">{{HEADLINE_STAT_1_LABEL}}</span>
+                <div class="v">{{HEADLINE_STAT_1_VALUE}}</div>
+                <div class="s">{{HEADLINE_STAT_1_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{HEADLINE_STAT_2_LABEL}}</span>
+                <div class="v">{{HEADLINE_STAT_2_VALUE}}</div>
+                <div class="s">{{HEADLINE_STAT_2_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{HEADLINE_STAT_3_LABEL}}</span>
+                <div class="v">{{HEADLINE_STAT_3_VALUE}}</div>
+                <div class="s">{{HEADLINE_STAT_3_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{HEADLINE_STAT_4_LABEL}}</span>
+                <div class="v">{{HEADLINE_STAT_4_VALUE}}</div>
+                <div class="s">{{HEADLINE_STAT_4_SUBLABEL}}</div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <div class="table-label"><span class="id">Table 01</span>{{TABLE_1_CAPTION}}</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{{T1_COL_1}}</th>
+                    <th>{{T1_COL_2}}</th>
+                    <th>{{T1_COL_3}}</th>
+                    <th>{{T1_COL_4}}</th>
+                    <th>{{T1_COL_5}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{T1_R1_C1}}</td>
+                    <td class="num">{{T1_R1_C2}}</td>
+                    <td class="num">{{T1_R1_C3}}</td>
+                    <td class="num pos">{{T1_R1_C4}}</td>
+                    <td class="num">{{T1_R1_C5}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{T1_R2_C1}}</td>
+                    <td class="num">{{T1_R2_C2}}</td>
+                    <td class="num">{{T1_R2_C3}}</td>
+                    <td class="num pos">{{T1_R2_C4}}</td>
+                    <td class="num">{{T1_R2_C5}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>{{HEADLINE_CONFOUND_PARAGRAPH}}</p>
+
+            <h3>{{LOAD_BEARING_DETAIL_TITLE}}</h3>
+            <p>{{LOAD_BEARING_DETAIL_PARAGRAPH}}</p>
+
+            <div class="callout">
+              <span class="callout-label">{{SANITY_CHECK_LABEL}}</span>
+              <p>{{SANITY_CHECK_BODY}}</p>
+            </div>
+
+            <!-- ============================================================
+                 Mechanism / replication signature (with Chart 1)
+                 See references/chart-patterns.md for the full SVG template.
+                 Below is a minimal grouped-line scaffold; replace points + labels.
+                 ============================================================ -->
+            <h2 id="mechanism">{{MECHANISM_SECTION_TITLE}}</h2>
+
+            <p>{{MECHANISM_INTRO_PARAGRAPH}}</p>
+
+            <figure class="chart">
+              <svg viewBox="0 0 960 460" role="img" aria-label="{{CHART_1_ARIA}}">
+                <rect x="0" y="0" width="960" height="460" fill="#F9F9F6" />
+
+                <text x="480" y="30" text-anchor="middle" fill="#3B3B39"
+                      font-family="Libre Baskerville, Georgia, serif" font-size="18" font-weight="400">
+                  {{CHART_1_TITLE}}
+                </text>
+                <text x="480" y="54" text-anchor="middle" fill="#969592"
+                      font-family="Inter, Helvetica Neue, sans-serif" font-size="12" font-weight="400">
+                  {{CHART_1_SUBTITLE}}
+                </text>
+
+                <!-- legend (two series) -->
+                <line x1="370" y1="78" x2="402" y2="78" stroke="#3B3B39" stroke-width="2" />
+                <text x="408" y="82" fill="#3B3B39"
+                      font-family="Inter, Helvetica Neue, sans-serif" font-size="12">{{CHART_1_SERIES_A}}</text>
+                <line x1="498" y1="78" x2="530" y2="78" stroke="#969592" stroke-width="2" stroke-dasharray="4 3" />
+                <text x="536" y="82" fill="#3B3B39"
+                      font-family="Inter, Helvetica Neue, sans-serif" font-size="12">{{CHART_1_SERIES_B}}</text>
+
+                <!-- gridlines (0%, 25%, 50%, 75%, 100%) -->
+                <line x1="80" y1="380"   x2="880" y2="380"   stroke="#C8C7C2" stroke-width="1" />
+                <line x1="80" y1="312.5" x2="880" y2="312.5" stroke="#E4E3DE" stroke-width="1" />
+                <line x1="80" y1="245"   x2="880" y2="245"   stroke="#E4E3DE" stroke-width="1" />
+                <line x1="80" y1="177.5" x2="880" y2="177.5" stroke="#E4E3DE" stroke-width="1" />
+                <line x1="80" y1="110"   x2="880" y2="110"   stroke="#E4E3DE" stroke-width="1" />
+
+                <text x="72" y="384" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">0%</text>
+                <text x="72" y="316" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">25%</text>
+                <text x="72" y="249" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">50%</text>
+                <text x="72" y="181" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">75%</text>
+                <text x="72" y="114" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">100%</text>
+
+                <!-- REPLACE: series A polyline (primary, solid) -->
+                <polyline points="{{CHART_1_SERIES_A_POINTS}}"
+                          fill="none" stroke="#3B3B39" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round" />
+
+                <!-- REPLACE: series B polyline (secondary, dashed) -->
+                <polyline points="{{CHART_1_SERIES_B_POINTS}}"
+                          fill="none" stroke="#969592" stroke-width="2"
+                          stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round" />
+
+                <!-- REPLACE: x-axis tick labels at the four x positions -->
+                <text x="180" y="404" text-anchor="middle" fill="#3B3B39" font-family="Inter, sans-serif" font-size="12">{{X1_LABEL}}</text>
+                <text x="380" y="404" text-anchor="middle" fill="#3B3B39" font-family="Inter, sans-serif" font-size="12">{{X2_LABEL}}</text>
+                <text x="580" y="404" text-anchor="middle" fill="#3B3B39" font-family="Inter, sans-serif" font-size="12">{{X3_LABEL}}</text>
+                <text x="780" y="404" text-anchor="middle" fill="#3B3B39" font-family="Inter, sans-serif" font-size="12">{{X4_LABEL}}</text>
+
+                <text x="80" y="448" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{CHART_1_FOOTER_NOTE}}</text>
+              </svg>
+              <figcaption>
+                <strong>Figure 1.</strong> {{FIGURE_1_CAPTION}}
+              </figcaption>
+            </figure>
+
+            <p>{{REPLICATION_BRIDGE_LINE}}</p>
+
+            <div class="table-wrap">
+              <div class="table-label"><span class="id">Table 02</span>{{TABLE_2_CAPTION}}</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{{T2_COL_1}}</th>
+                    <th>{{T2_COL_2}}</th>
+                    <th>{{T2_COL_3}}</th>
+                    <th>{{T2_COL_4}}</th>
+                    <th>{{T2_COL_5}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{T2_R1_C1}}</td>
+                    <td class="num">{{T2_R1_C2}}</td>
+                    <td class="num neg">{{T2_R1_C3}}</td>
+                    <td class="num neg">{{T2_R1_C4}}</td>
+                    <td class="num pos">{{T2_R1_C5}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{T2_R2_C1}}</td>
+                    <td class="num">{{T2_R2_C2}}</td>
+                    <td class="num neg">{{T2_R2_C3}}</td>
+                    <td class="num neg">{{T2_R2_C4}}</td>
+                    <td class="num pos">{{T2_R2_C5}}</td>
+                  </tr>
+                  <tr class="highlight">
+                    <td>{{T2_R3_C1}}</td>
+                    <td class="num">{{T2_R3_C2}}</td>
+                    <td class="num neg">{{T2_R3_C3}}</td>
+                    <td class="num neg">{{T2_R3_C4}}</td>
+                    <td class="num pos">{{T2_R3_C5}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>{{REPLICATION_CLOSING_LINE}}</p>
+
+            <!-- ============================================================
+                 Bounds on the claim
+                 ============================================================ -->
+            <h2 id="limits">Bounds on the claim</h2>
+
+            <p>{{LIMITS_INTRO_LINE}}</p>
+
+            <div class="callout">
+              <span class="callout-label">What the result is not</span>
+              <p>{{LIMITS_BODY}}</p>
+            </div>
+
+            <p>{{LIMITS_FOLLOWUP_PARAGRAPH}}</p>
+
+            <!-- ============================================================
+                 OPTIONAL — followup section.
+                 If there's no follow-up, delete the entire <h2 id="followup"> block
+                 down through the closing </div class="neg-list"> and skip to <h2 id="next">.
+                 If there IS a follow-up, this block holds:
+                   - intro paragraphs
+                   - sub-result(s) with stat-row(s)
+                   - contingency table (Table 03)
+                   - second chart (Figure 2 — line trajectory)
+                   - mechanism table (Table 04)
+                   - honest-scope neg-list
+                 ============================================================ -->
+            <h2 id="followup">{{FOLLOWUP_SECTION_TITLE}}</h2>
+
+            <p>{{FOLLOWUP_INTRO_PARAGRAPH_1}}</p>
+            <p>{{FOLLOWUP_INTRO_PARAGRAPH_2}}</p>
+            <p>{{FOLLOWUP_INTRO_PARAGRAPH_3}}</p>
+
+            <h3>{{FOLLOWUP_SUB_1_TITLE}}</h3>
+            <p>{{FOLLOWUP_SUB_1_INTRO}}</p>
+
+            <div class="stat-row">
+              <div class="stat">
+                <span class="k">{{F_STAT_1_LABEL}}</span>
+                <div class="v">{{F_STAT_1_VALUE}}</div>
+                <div class="s">{{F_STAT_1_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{F_STAT_2_LABEL}}</span>
+                <div class="v">{{F_STAT_2_VALUE}}</div>
+                <div class="s">{{F_STAT_2_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{F_STAT_3_LABEL}}</span>
+                <div class="v">{{F_STAT_3_VALUE}}</div>
+                <div class="s">{{F_STAT_3_SUBLABEL}}</div>
+              </div>
+              <div class="stat">
+                <span class="k">{{F_STAT_4_LABEL}}</span>
+                <div class="v">{{F_STAT_4_VALUE}}</div>
+                <div class="s">{{F_STAT_4_SUBLABEL}}</div>
+              </div>
+            </div>
+
+            <p>{{FOLLOWUP_SUB_1_READING}}</p>
+
+            <h3>{{FOLLOWUP_SUB_2_TITLE}}</h3>
+
+            <p>{{FOLLOWUP_SUB_2_INTRO}}</p>
+
+            <!-- Contingency table (3x3 + totals row). Adjust shape as needed. -->
+            <div class="table-wrap">
+              <div class="table-label"><span class="id">Table 03</span>{{TABLE_3_CAPTION}}</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{{T3_COL_1}}</th>
+                    <th>{{T3_COL_2}}</th>
+                    <th>{{T3_COL_3}}</th>
+                    <th>{{T3_COL_4}}</th>
+                    <th>row total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{T3_R1_C1}}</td>
+                    <td class="num">{{T3_R1_C2}}</td>
+                    <td class="num">{{T3_R1_C3}}</td>
+                    <td class="num">{{T3_R1_C4}}</td>
+                    <td class="num">{{T3_R1_TOTAL}}</td>
+                  </tr>
+                  <tr class="highlight">
+                    <td>{{T3_R2_C1}}</td>
+                    <td class="num">{{T3_R2_C2}}</td>
+                    <td class="num pos">{{T3_R2_C3}}</td>
+                    <td class="num">{{T3_R2_C4}}</td>
+                    <td class="num">{{T3_R2_TOTAL}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{T3_R3_C1}}</td>
+                    <td class="num">{{T3_R3_C2}}</td>
+                    <td class="num">{{T3_R3_C3}}</td>
+                    <td class="num">{{T3_R3_C4}}</td>
+                    <td class="num">{{T3_R3_TOTAL}}</td>
+                  </tr>
+                  <tr class="totals">
+                    <td>column total</td>
+                    <td class="num">{{T3_COL_2_TOTAL}}</td>
+                    <td class="num">{{T3_COL_3_TOTAL}}</td>
+                    <td class="num">{{T3_COL_4_TOTAL}}</td>
+                    <td class="num">{{T3_GRAND_TOTAL}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>{{FOLLOWUP_SUB_2_READING}}</p>
+
+            <p>{{FOLLOWUP_DESIGN_PARAGRAPH}}</p>
+
+            <h3>{{FOLLOWUP_SUB_3_TITLE}}</h3>
+
+            <p>{{FOLLOWUP_SUB_3_INTRO}}</p>
+
+            <!-- Single-series line trajectory — see references/chart-patterns.md #1 -->
+            <figure class="chart">
+              <svg viewBox="0 0 960 460" role="img" aria-label="{{CHART_2_ARIA}}">
+                <rect x="0" y="0" width="960" height="460" fill="#F9F9F6" />
+
+                <text x="480" y="30" text-anchor="middle" fill="#3B3B39"
+                      font-family="Libre Baskerville, Georgia, serif" font-size="18" font-weight="400">
+                  {{CHART_2_TITLE}}
+                </text>
+                <text x="480" y="54" text-anchor="middle" fill="#969592"
+                      font-family="Inter, Helvetica Neue, sans-serif" font-size="12">
+                  {{CHART_2_SUBTITLE}}
+                </text>
+
+                <line x1="350" y1="78" x2="382" y2="78" stroke="#5C8A95" stroke-width="2.5" />
+                <text x="388" y="82" fill="#3B3B39" font-family="Inter, sans-serif" font-size="12">{{CHART_2_PRIMARY_LABEL}}</text>
+                <line x1="568" y1="78" x2="600" y2="78" stroke="#969592" stroke-width="1.5" stroke-dasharray="4 4" />
+                <text x="606" y="82" fill="#3B3B39" font-family="Inter, sans-serif" font-size="12">{{CHART_2_REFERENCE_LABEL}}</text>
+
+                <!-- gridlines (set y_max in the chart-patterns reference) -->
+                <line x1="80" y1="380" x2="880" y2="380" stroke="#C8C7C2" stroke-width="1" />
+                <line x1="80" y1="303" x2="880" y2="303" stroke="#E4E3DE" stroke-width="1" />
+                <line x1="80" y1="226" x2="880" y2="226" stroke="#E4E3DE" stroke-width="1" />
+                <line x1="80" y1="149" x2="880" y2="149" stroke="#E4E3DE" stroke-width="1" />
+
+                <text x="72" y="384" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{Y_TICK_0}}</text>
+                <text x="72" y="307" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{Y_TICK_1}}</text>
+                <text x="72" y="230" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{Y_TICK_2}}</text>
+                <text x="72" y="153" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{Y_TICK_3}}</text>
+
+                <!-- baseline reference dashed line at y=BASELINE_Y -->
+                <line x1="80" y1="{{BASELINE_Y}}" x2="880" y2="{{BASELINE_Y}}" stroke="#969592" stroke-width="1" stroke-dasharray="4 4" opacity="0.7" />
+                <text x="876" y="{{BASELINE_Y_MINUS_4}}" text-anchor="end" fill="#969592" font-family="Inter, sans-serif" font-size="10">{{BASELINE_LABEL}}</text>
+
+                <!-- main polyline + faint area fill -->
+                <polyline points="{{CHART_2_POINTS}}"
+                          fill="none" stroke="#5C8A95" stroke-width="2.5"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                <polygon points="{{CHART_2_AREA_POINTS}}" fill="#5C8A95" opacity="0.08" />
+
+                <!-- x-axis tick labels — duplicate <text> per data point -->
+                <text x="480" y="426" text-anchor="middle" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{X_AXIS_TITLE}}</text>
+
+                <text x="80" y="448" fill="#969592" font-family="Inter, sans-serif" font-size="11">{{CHART_2_FOOTER_NOTE}}</text>
+              </svg>
+              <figcaption>
+                <strong>Figure 2.</strong> {{FIGURE_2_CAPTION}}
+              </figcaption>
+            </figure>
+
+            <h3>{{FOLLOWUP_SUB_4_TITLE}}</h3>
+
+            <p>{{FOLLOWUP_SUB_4_INTRO}}</p>
+
+            <div class="table-wrap">
+              <div class="table-label"><span class="id">Table 04</span>{{TABLE_4_CAPTION}}</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{{T4_COL_1}}</th>
+                    <th>{{T4_COL_2}}</th>
+                    <th>{{T4_COL_3}}</th>
+                    <th>{{T4_COL_4}}</th>
+                    <th>{{T4_COL_5}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="highlight">
+                    <td>{{T4_R1_C1}}</td>
+                    <td class="num">{{T4_R1_C2}}</td>
+                    <td class="num">{{T4_R1_C3}}</td>
+                    <td class="num">{{T4_R1_C4}}</td>
+                    <td class="num pos">{{T4_R1_C5}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{T4_R2_C1}}</td>
+                    <td class="num">{{T4_R2_C2}}</td>
+                    <td class="num">{{T4_R2_C3}}</td>
+                    <td class="num">{{T4_R2_C4}}</td>
+                    <td class="num pos">{{T4_R2_C5}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{T4_R3_C1}}</td>
+                    <td class="num">{{T4_R3_C2}}</td>
+                    <td class="num">{{T4_R3_C3}}</td>
+                    <td class="num">{{T4_R3_C4}}</td>
+                    <td class="num pos">{{T4_R3_C5}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{T4_R4_C1}}</td>
+                    <td class="num">{{T4_R4_C2}}</td>
+                    <td class="num">{{T4_R4_C3}}</td>
+                    <td class="num">{{T4_R4_C4}}</td>
+                    <td class="num pos">{{T4_R4_C5}}</td>
+                  </tr>
+                  <tr class="totals">
+                    <td>{{T4_TOTAL_LABEL}}</td>
+                    <td class="num">{{T4_TOTAL_C2}}</td>
+                    <td class="num">{{T4_TOTAL_C3}}</td>
+                    <td class="num">{{T4_TOTAL_C4}}</td>
+                    <td class="num pos">{{T4_TOTAL_C5}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>{{FOLLOWUP_SUB_4_READING}}</p>
+
+            <h3>{{FOLLOWUP_SUB_5_TITLE}}</h3>
+
+            <div class="neg-list">
+              <span class="neg-list-label">Honest scope</span>
+              <ul>
+                <li><strong>Does say:</strong> {{NEGLIST_DOES_SAY}}</li>
+                <li><strong>Does not say:</strong> {{NEGLIST_DOES_NOT_SAY}}</li>
+                <li><strong>{{NEGLIST_THIRD_LABEL}}:</strong> {{NEGLIST_THIRD_BODY}}</li>
+              </ul>
+            </div>
+
+            <!-- ============================================================
+                 What's next
+                 ============================================================ -->
+            <h2 id="next">What's next</h2>
+
+            <p>{{WHATS_NEXT_INTRO}}</p>
+
+            <h3>{{NEXT_ITEM_1_TITLE}}</h3>
+            <p>{{NEXT_ITEM_1_BODY}}</p>
+
+            <h3>{{NEXT_ITEM_2_TITLE}}</h3>
+            <p>{{NEXT_ITEM_2_BODY}}</p>
+
+            <h3>{{NEXT_ITEM_3_TITLE}}</h3>
+            <p>{{NEXT_ITEM_3_BODY}}</p>
+
+            <h3>{{NEXT_ITEM_4_TITLE}}</h3>
+            <p>{{NEXT_ITEM_4_BODY}}</p>
+
+            <div class="break">· · ·</div>
+
+            <p>{{CLOSING_PARAGRAPH_1}}</p>
+            <p>{{CLOSING_PARAGRAPH_2}}</p>
+
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <form class="footer-subscribe" novalidate>
+          <label class="footer-subscribe-label" for="footer-email">Get early access to research, products, and more.</label>
+          <div class="footer-subscribe-row">
+            <input class="footer-subscribe-input" type="email" id="footer-email" name="email" placeholder="you@example.com" autocomplete="email" required />
+            <button class="footer-subscribe-button" type="submit">Subscribe</button>
+          </div>
+          <p class="footer-subscribe-status" role="status" aria-live="polite"></p>
+        </form>
+        <div class="footer-meta">
+          {{AUTHOR_NAME}} · {{LAB_NAME}} · {{ARTICLE_DATE}}<br />
+          {{SETUP_LINE}}<br />
+          Code &amp; data: <a href="{{LINK_1_URL}}">{{LINK_1_LABEL}}</a> · <a href="{{LINK_2_URL}}">{{LINK_2_LABEL}}</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
