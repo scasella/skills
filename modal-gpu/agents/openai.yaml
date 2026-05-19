@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modal GPU Runner"
+  short_description: "Run short bounded Modal GPU smoke checks"
+  default_prompt: "Use $modal-gpu for a short bounded Modal GPU validation run, estimate cost first, and report cleanup evidence with logs."

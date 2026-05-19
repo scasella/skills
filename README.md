@@ -1,6 +1,6 @@
 # Skills
 
-Personal Codex skill collection for reusable workflows, research writeups, Tinker work, Prime Intellect environment work, and HTML artifacts.
+Personal Codex skill collection for reusable workflows, research writeups, Modal work, Tinker work, Prime Intellect environment work, and HTML artifacts.
 
 ## Contents
 
@@ -8,6 +8,12 @@ Personal Codex skill collection for reusable workflows, research writeups, Tinke
 | --- | --- |
 | `html-artifact` | Produce polished, self-contained HTML deliverables instead of long markdown artifacts. |
 | `goal-forge` | Turn rough coding ideas into executable specs and Codex `/goal` prompts. |
+| `modal` | Route Modal, GPU, sandbox, notebook, training, fine-tuning, and CUDA requests to the right workflow. |
+| `modal-alias` | Alias skill for the Modal router. |
+| `modal-basic-skills` | Foundational Modal platform knowledge for auto-research agents. |
+| `modal-gpu` | Run short, bounded commands on remote Modal GPU sandboxes for GPU validation. |
+| `modal-gpu-dev` | Use short interactive GPU sessions on Modal with SSH access for debugging and prototyping. |
+| `modal-gpu-experiment` | Build Modal training apps, experiment patterns, and persistent storage workflows. |
 | `research-blog` | Turn experimental results into self-contained HTML research blog posts. |
 | `prime-rl-environment-builder` | Design, harden, package, publish, and validate Prime Intellect RL environments. |
 | `tinker-core` | Core Tinker API setup, model selection, SDK, CLI, and hyperparameter guidance. |

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modal"
+  short_description: "Alias that routes Modal work to Modal Router"
+  default_prompt: "Use $modal as an alias for $modal-router. Load Modal Router first, then follow its primitive selection and child-skill routing."

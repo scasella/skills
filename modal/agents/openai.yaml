@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modal Router"
+  short_description: "Choose the right Modal primitive and GPU cost guardrails"
+  default_prompt: "Use $modal-router to choose the right Modal primitive, estimate GPU cost, and route this work to the appropriate Modal child skill."
